@@ -8,14 +8,10 @@ angular.module('myApp.controllers', [])
   .controller('MyCtrl2', [function() { }])
 
    .controller('LoginCtrl', ['$scope', 'loginService', function($scope, loginService) {
-//      $scope.email = null;
-//      $scope.pass = null;
-//      $scope.confirm = null;
-//      $scope.createMode = false;
-      $scope.email = 'wulf@firebase.com';
-      $scope.pass = '123';
-      $scope.confirm = '123';
-      $scope.createMode = true;
+      $scope.email = null;
+      $scope.pass = null;
+      $scope.confirm = null;
+      $scope.createMode = false;
 
       $scope.login = function(callback) {
          $scope.err = null;
