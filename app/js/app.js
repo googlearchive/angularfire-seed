@@ -4,6 +4,8 @@
 angular.module('myApp',
       ['myApp.config', 'myApp.filters', 'myApp.services', 'myApp.directives', 'myApp.controllers', 'firebase']
    )
+
+   // configure views; note the authRequired parameter for authenticated pages
    .config(['$routeProvider', function($routeProvider) {
       $routeProvider.when('/view1', {
          templateUrl: 'partials/view1.html',
@@ -31,7 +33,7 @@ angular.module('myApp',
 
    // double-check that the app has been configured
    .run(['FBURL', function(FBURL) {
-      if( FBURL === 'http://INSTANCE.firebaseio.com' ) {
+      if( FBURL === 'https://INSTANCE.firebaseio.com' ) {
          angular.element(document.body).html('<h1>Please configure app/js/config.js before running!</h1>');
       }
    }])

@@ -50,3 +50,9 @@ form label span {
 .error {
    color: red;
 }
+
+fieldset {
+   float: left;
+   margin-right: 25px;
+   padding: 25px;
+}
