@@ -1,0 +1,18 @@
+
+<h2>Login Page</h2>
+
+<form>
+    <label>
+        <span>email</span>
+        <input type="text" ng-model="email" />
+    </label>
+    <label>
+        <span>password</span>
+        <input type="password" ng-model="pass" />
+    </label>
+    <button ng-click="login()">Log In</button>
+    <button ng-click="newAccount()">Create Account</button>
+
+    <p ng-show="err" class="error">{{err}}</p>
+</form>
+
