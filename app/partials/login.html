@@ -10,8 +10,13 @@
         <span>password</span>
         <input type="password" ng-model="pass" />
     </label>
-    <button ng-click="login()">Log In</button>
-    <button ng-click="newAccount()">Create Account</button>
+    <label ng-cloak ng-show="createMode">
+        <span>confirm pass</span>
+        <input type="password" ng-model="confirm" />
+    </label>
+    <button ng-click="login()" ng-hide="createMode">Log In</button>
+    <button ng-click="createMode = true" ng-hide="createMode">Create Account</button>
+    <button ng-cloak ng-show="createMode" ng-click="createAccount()">Ready to Create</button>
 
     <p ng-show="err" class="error">{{err}}</p>
 </form>

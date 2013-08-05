@@ -41,14 +41,4 @@ angular.module('myApp',
    // establish authentication
    .run(['angularFireAuth', 'FBURL', '$rootScope', function(angularFireAuth, FBURL, $rootScope) {
       angularFireAuth.initialize(FBURL, {scope: $rootScope, name: "auth", path: '/login'});
-
-      $rootScope.$on("angularFireAuth:login", function(evt, user) {
-         console.log('user logged in', user); //debug
-      });
-      $rootScope.$on("angularFireAuth:logout", function(evt) {
-         console.log('user logged out'); //debug
-      });
-      $rootScope.$on("angularFireAuth:error", function(evt, err) {
-         console.log('login error', err); //debug
-      });
    }]);

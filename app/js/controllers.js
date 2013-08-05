@@ -8,19 +8,51 @@ angular.module('myApp.controllers', [])
   .controller('MyCtrl2', [function() { }])
 
    .controller('LoginCtrl', ['$scope', 'loginService', function($scope, loginService) {
-      $scope.email = 'katowulf@gmail.com'; //null;
-      $scope.pass = '123'; //null;
+//      $scope.email = null;
+//      $scope.pass = null;
+//      $scope.confirm = null;
+//      $scope.createMode = false;
+      $scope.email = 'wulf@firebase.com';
+      $scope.pass = '123';
+      $scope.confirm = '123';
+      $scope.createMode = true;
 
-      $scope.login = function() {
+      $scope.login = function(callback) {
          $scope.err = null;
-         loginService.login($scope.email, $scope.pass, '/account', function(err) {
-            console.log('it had an error', err); //debug
-            $scope.err = err;
+         loginService.login($scope.email, $scope.pass, '/account', function(err, user) {
+            $scope.err = err||null;
+            typeof(callback) === 'function' && callback(err, user);
          });
       };
 
-      $scope.newAccount = function() {
-         console.log('newAccount'); //debug
+      $scope.createAccount = function() {
+         if( !$scope.email ) {
+            $scope.err = 'Please enter an email address';
+         }
+         else if( !$scope.pass ) {
+            $scope.err = 'Please enter a password';
+         }
+         else if( $scope.pass !== $scope.confirm ) {
+            $scope.err = 'Passwords do not match';
+         }
+         else {
+            loginService.createAccount($scope.email, $scope.pass, function(err, user) {
+               if( err ) {
+                  console.log('err', err); //debug
+                  $scope.err = err;
+               }
+               else {
+                  console.log('logging in'); //debug
+                  // must be logged in before I can write to my profile
+                  $scope.login(function(err) {
+                     if( !err ) {
+                        console.log('logged in', err, user); //debug
+                        loginService.createProfile(user.id, user.email);
+                     }
+                  });
+               }
+            });
+         }
       };
    }])
 
@@ -29,7 +61,6 @@ angular.module('myApp.controllers', [])
       angularFire(FBURL+'/users/'+$scope.auth.id, $scope, 'user', {});
 
       $scope.logout = function() {
-         console.log('logging out'); //debug
          loginService.logout('/login');
       };
 
