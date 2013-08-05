@@ -58,30 +58,6 @@
                      $timeout(opts.callback.bind(null, errMsg(err)));
                   })
                }
-            },
-
-            /**
-             * @param {string} path
-             */
-            redirectOnLogin: function(path, cancelOnPathChange) {
-               var subs = [];
-               function disposeAll() {
-                  console.log('disposing all'); //debug
-                  angular.forEach(subs, function(s) { s(); });
-                  subs = null;
-               }
-               subs.push($rootScope.$on('angularFireAuth:login', function() {
-                  console.log('login detected', path); //debug
-                  $timeout(function() {
-                     $location.replace();
-                     $location.path(path);
-                     disposeAll();
-                  })
-               }));
-               if( cancelOnPathChange ) {
-                  subs.push($rootScope.$on('$routeChangeSuccess', disposeAll));
-               }
-               return disposeAll;
             }
          }
       }]);

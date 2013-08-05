@@ -11,8 +11,6 @@ angular.module('myApp.controllers', [])
       $scope.email = 'katowulf@gmail.com'; //null;
       $scope.pass = '123'; //null;
 
-//      loginService.redirectOnLogin('/account', true);
-
       $scope.login = function() {
          $scope.err = null;
          loginService.login($scope.email, $scope.pass, '/account', function(err) {
