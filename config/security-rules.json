@@ -1,5 +1,22 @@
 {
    "rules": {
-
+      ".read": false,
+      ".write": false,
+      "users": {
+         "$user": {
+            ".read": "auth.id === $user && auth.provider === 'password'",
+            ".write": "auth.id === $user && auth.provider === 'password'",
+            ".validate": "newData.hasChildren(['name', 'email'])",
+            "name": {
+               ".validate": "newData.isString() && newData.val().length <= 2000"
+            },
+            "email": {
+               ".validate": "newData.isString() && newData.val().length <= 2000"
+            },
+            "$other": {
+               ".validate": false
+            }
+         }
+      }
    }
 }

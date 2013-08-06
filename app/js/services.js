@@ -5,8 +5,8 @@
 
    angular.module('myApp.services', [])
 
-      .factory('loginService', ['angularFireAuth', 'profileCreator', '$location', '$timeout',
-         function(angularFireAuth, profileCreator, $location, $timeout) {
+      .factory('loginService', ['angularFireAuth', 'profileCreator', '$location', '$rootScope',
+         function(angularFireAuth, profileCreator, $location, $rootScope) {
             return {
                /**
                 * @param {string} email
@@ -28,8 +28,6 @@
                      }
                      callback && callback(null, user);
                   }, callback);
-
-                  return p;
                },
 
                /**
@@ -44,21 +42,25 @@
 
                changePassword: function(opts) {
                   if( !opts.oldpass || !opts.newpass ) {
-                     $timeout(callback.bind(null, 'Please enter a password'));
+                     opts.callback('Please enter a password');
                   }
                   else if( opts.newpass !== opts.confirm ) {
-                     $timeout(opts.callback.bind(null, 'Passwords do not match'));
+                     opts.callback('Passwords do not match');
                   }
                   else {
                      angularFireAuth._authClient.changePassword(opts.email, opts.oldpass, opts.newpass, function(err) {
-                        $timeout(opts.callback.bind(null, errMsg(err)));
+                        opts.callback(errMsg(err));
+                        $rootScope.$apply();
                      })
                   }
                },
 
                createAccount: function(email, pass, callback) {
                   angularFireAuth._authClient.createUser(email, pass, function(err, user) {
-                     callback && $timeout(callback.bind(null, err, user))
+                     if( callback ) {
+                        callback(err, user);
+                        $rootScope.$apply();
+                     }
                   });
                },
 
@@ -66,16 +68,15 @@
             }
          }])
 
-      .factory('profileCreator', ['Firebase', 'FBURL', '$timeout', function(Firebase, FBURL, $timeout) {
+      .factory('profileCreator', ['Firebase', 'FBURL', '$rootScope', function(Firebase, FBURL, $rootScope) {
          return function(id, email, callback) {
-            setTimeout(function() {
-               console.log('profileCreator', id, email, {email: email, name: firstPartOfEmail(email)}); //debug
-               new Firebase(FBURL).child('users/'+id).set({email: email, name: firstPartOfEmail(email)}, function(err) {
-                  //err && console.error(err);
-                  callback && $timeout(callback.bind(null, err));
-               });
-
-            }, 100);
+            new Firebase(FBURL).child('users/'+id).set({email: email, name: firstPartOfEmail(email)}, function(err) {
+               //err && console.error(err);
+               if( callback ) {
+                  callback(err);
+                  $rootScope.$apply();
+               }
+            });
 
             function firstPartOfEmail(email) {
                return ucfirst(email.substr(0, email.indexOf('@'))||'');
