@@ -7,8 +7,8 @@ angular.module('myApp.config', [])
    .constant('version', '0.1')
 
    // your Firebase URL goes here
-   //.constant('FBURL', 'https://INSTANCE.firebaseio.com');
-   .constant('FBURL', 'https://angularfire-seed.firebaseio.com');
+   .constant('FBURL', 'https://INSTANCE.firebaseio.com');
+
 
 /*********************
  * !!FOR E2E TESTING!!

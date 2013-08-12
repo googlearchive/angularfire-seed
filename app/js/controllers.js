@@ -3,9 +3,26 @@
 /* Controllers */
 
 angular.module('myApp.controllers', [])
-   .controller('MyCtrl1', [function() { }])
+   .controller('MyCtrl1', ['$scope', 'FBURL', 'angularFire', function($scope, FBURL, angularFire) {
+      angularFire(FBURL+'/syncedValue', $scope, 'syncedValue', '');
+   }])
 
-  .controller('MyCtrl2', [function() { }])
+  .controller('MyCtrl2', ['$scope', 'FBURL', 'Firebase', 'angularFireCollection', function($scope, FBURL, Firebase, angularFireCollection) {
+      $scope.newMessage = null;
+
+      // constrain number of messages by passing a ref to angularFire
+      var ref = new Firebase(FBURL+'/messages').limit(10);
+      // add the array into $scope
+      $scope.messages = angularFireCollection(ref);
+
+      // add new messages to the list
+      $scope.addMessage = function() {
+         if( $scope.newMessage ) {
+            $scope.messages.add({text: $scope.newMessage});
+            $scope.newMessage = null;
+         }
+      };
+   }])
 
    .controller('LoginCtrl', ['$scope', 'loginService', function($scope, loginService) {
       $scope.email = null;

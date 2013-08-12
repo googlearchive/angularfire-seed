@@ -2,9 +2,27 @@
    "rules": {
       ".read": false,
       ".write": false,
+      "syncedValue": {
+         ".read": true,
+         ".write": true,
+         ".validate": "newData.isString() && newData.val().length <= 100"
+      },
+      "messages": {
+         ".read": true,
+         "$message": {
+            ".write": true,
+            ".validate": "newData.hasChildren(['text'])",
+            "text": {
+               ".validate": "newData.isString() && newData.val().length <= 1000"
+            },
+            "$other": {
+               ".validate": false
+            }
+         }
+      },
       "users": {
          "$user": {
-            ".read": "auth.id === $user && auth.provider === 'password'",
+            //".read": "auth.id === $user && auth.provider === 'password'", // for production
             ".write": "auth.id === $user && auth.provider === 'password'",
             ".validate": "newData.hasChildren(['name', 'email'])",
             "name": {

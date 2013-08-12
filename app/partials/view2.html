@@ -1,6 +1,15 @@
 <h2>View 2</h2>
 
+<form>
+  <input placeholder="Message..." ng-model="newMessage">
+  <button type="submit" ng-click="addMessage()">send</button>
+</form>
+
+<ul id="messages">
+    <li ng-repeat="message in messages | reverse">{{message.text}}</li>
+</ul>
+
 <p>
-  Showing of 'interpolate' filter:
+  Running the 'interpolate' filter:
   {{ 'Current version is v%VERSION%.' | interpolate }}
 </p>
