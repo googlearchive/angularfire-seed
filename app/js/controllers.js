@@ -34,15 +34,12 @@ angular.module('myApp.controllers', [])
          else {
             loginService.createAccount($scope.email, $scope.pass, function(err, user) {
                if( err ) {
-                  console.log('err', err); //debug
                   $scope.err = err;
                }
                else {
-                  console.log('logging in'); //debug
                   // must be logged in before I can write to my profile
                   $scope.login(function(err) {
                      if( !err ) {
-                        console.log('logged in', err, user); //debug
                         loginService.createProfile(user.id, user.email);
                      }
                   });
@@ -70,7 +67,6 @@ angular.module('myApp.controllers', [])
       }
 
       $scope.updatePassword = function() {
-         console.log('updating pass', $scope.auth); //debug
          reset();
          loginService.changePassword(buildPwdParms());
       };
@@ -86,7 +82,6 @@ angular.module('myApp.controllers', [])
             newpass: $scope.newpass,
             confirm: $scope.confirm,
             callback: function(err) {
-               console.log('updated', err); //debug
                if( err ) {
                   $scope.err = err;
                }
