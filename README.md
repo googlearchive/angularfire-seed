@@ -1,8 +1,8 @@
-# angular-seed — the seed for AngularJS apps
 
-This project is an application skeleton for a typical [AngularJS](http://angularjs.org/) web app.
-You can use it to quickly bootstrap your angular webapp projects and dev environment for these
-projects.
+# angular-seed — the seed for AngularFire apps
+
+This project is an application skeleton for a typical [AngularFire](http://angularfire.com/) web app.
+This library allows you to quickly bootstrap real-time apps using [Firebase](http://www.firebase.com) and [AngularJS](http://www.angularjs.org).
 
 The seed contains AngularJS libraries, test libraries and a bunch of scripts all preconfigured for
 instant web development gratification. Just clone the repo (or download the zip/tarball), start up
@@ -12,17 +12,18 @@ The seed app doesn't do much, just shows how to wire two controllers and views t
 check it out by opening app/index.html in your browser (might not work file `file://` scheme in
 certain browsers, see note below).
 
-_Note: While angular is client-side-only technology and it's possible to create angular webapps that
-don't require a backend server at all, we recommend hosting the project files using a local
+_Note: While angular, angularFire, and Firebase can be used client-side-only, and it's possible to create
+apps that don't require a backend server at all, we recommend hosting the project files using a local
 webserver during development to avoid issues with security restrictions (sandbox) in browsers. The
 sandbox implementation varies between browsers, but quite often prevents things like cookies, xhr,
 etc to function properly when an html page is opened via `file://` scheme instead of `http://`._
 
 
-## How to use angular-seed
+## How to use angularFire-seed
 
-Clone the angular-seed repository and start hacking...
-
+ 1. Clone the angularFire-seed repository
+ 1. Open app/js/config.js and add your Firebase URL
+ 1. Start hacking...
 
 ### Running the app during development
 
@@ -36,6 +37,9 @@ your browser.
 
 
 ### Running the app in production
+
+Make sure you set up security rules for your Firebase! An example for this
+seed can be found in `config/security-rules.json`
 
 This really depends on how complex is your app and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
@@ -82,20 +86,10 @@ info.
   * run the tests from console with [Karma](http://karma-runner.github.io) via
     `scripts/e2e-test.sh` or `script/e2e-test.bat`
 
-### Continuous Integration
-
-CloudBees have provided a CI/deployment setup:
-
-<a href="https://grandcentral.cloudbees.com/?CB_clickstart=https://raw.github.com/CloudBees-community/angular-js-clickstart/master/clickstart.json"><img src="https://d3ko533tu1ozfq.cloudfront.net/clickstart/deployInstantly.png"/></a>
-
-If you run this, you will get a cloned version of this repo to start working on in a private git repo, 
-along with a CI service (in Jenkins) hosted that will run unit and end to end tests in both Firefox and Chrome.
-
 ### Receiving updates from upstream
 
 When we upgrade angular-seed's repo with newer angular or testing library code, you can just
 fetch the changes and merge them into your project with git.
-
 
 ## Directory Layout
 
@@ -117,12 +111,17 @@ fetch the changes and merge them into your project with git.
           angular.min.js    --> the latest minified angular js
           angular-*.js      --> angular add-on modules
           version.txt       --> version number
+        firebase/
+          angularFire.js    --> the angularFire adapter
       partials/             --> angular view partials (partial html templates)
-        partial1.html
-        partial2.html
+        partial1.html       --> a rudimentary angularFire example
+        partial2.html       --> a rudimentary angularFireCollection example
+        login.html          --> authentication and registration using angularFire email/password auth
+        account.html        --> a secured page (must login to view this)
 
     config/karma.conf.js        --> config file for running unit tests with Karma
     config/karma-e2e.conf.js    --> config file for running e2e tests with Karma
+    config/security-rules.json  --> sample security rules for your Firebase
 
     scripts/            --> handy shell/js/ruby scripts
       e2e-test.sh       --> runs end-to-end tests with Karma (*nix)
@@ -141,6 +140,7 @@ fetch the changes and merge them into your project with git.
           angular-scenario.js   --> angular's scenario (end-to-end) test runner library
           version.txt           --> version file
       unit/                     --> unit level specs/tests
+        configSpec.js           --> specs for config.js file
         controllersSpec.js      --> specs for controllers
         directivessSpec.js      --> specs for directives
         filtersSpec.js          --> specs for filters
@@ -148,4 +148,6 @@ fetch the changes and merge them into your project with git.
 
 ## Contact
 
-For more information on AngularJS please check out http://angularjs.org/
+More information on AngularFire: http://angularfire.com
+More information on Firebase: http://firebase.com
+More information on AngularJS: http://angularjs.org/
