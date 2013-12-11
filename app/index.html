@@ -5,7 +5,7 @@
   <title>My AngularJS App</title>
   <link rel="stylesheet" href="css/app.css"/>
 </head>
-<body>
+<body ng-cloak-auth class="hide">
 
   <ul class="menu">
     <li><a href="#/home">home</a></li>
@@ -29,5 +29,6 @@
   <script src="js/controllers.js"></script>
   <script src="js/filters.js"></script>
   <script src="js/directives.js"></script>
+  <script src="js/module.waitForAuth.js"></script>
 </body>
 </html>

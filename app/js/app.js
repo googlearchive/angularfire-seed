@@ -2,7 +2,7 @@
 
 // Declare app level module which depends on filters, and services
 angular.module('myApp',
-      ['myApp.config', 'myApp.filters', 'myApp.services', 'myApp.directives', 'myApp.controllers', 'firebase', 'ngRoute']
+      ['myApp.config', 'myApp.filters', 'myApp.services', 'myApp.directives', 'myApp.controllers', 'firebase', 'ngRoute', 'waitForAuth']
    )
 
    // configure views; note the authRequired parameter for authenticated pages

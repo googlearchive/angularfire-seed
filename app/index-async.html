@@ -42,7 +42,8 @@
             'js/services.js',
             'js/controllers.js',
             'js/filters.js',
-            'js/directives.js'
+            'js/directives.js',
+            'js/module.waitForAuth.js'
         ], function() {
             // when all is done, execute bootstrap angular application
             angular.bootstrap(document, ['myApp']);
@@ -52,7 +53,7 @@
   <title>My AngularJS App</title>
   <link rel="stylesheet" href="css/app.css">
 </head>
-<body ng-cloak>
+<body ng-cloak-auth class="hide">
 
     <ul class="menu">
         <li><a href="#/home">home</a></li>
