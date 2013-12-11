@@ -3,11 +3,11 @@
 /* Controllers */
 
 angular.module('myApp.controllers', [])
-   .controller('MyCtrl1', ['$scope', 'FBURL', 'angularFire', function($scope, FBURL, angularFire) {
+   .controller('HomeCtrl', ['$scope', 'FBURL', 'angularFire', function($scope, FBURL, angularFire) {
       angularFire(FBURL+'/syncedValue', $scope, 'syncedValue', '');
    }])
 
-  .controller('MyCtrl2', ['$scope', 'FBURL', 'Firebase', 'angularFireCollection', function($scope, FBURL, Firebase, angularFireCollection) {
+  .controller('ChatCtrl', ['$scope', 'FBURL', 'Firebase', 'angularFireCollection', function($scope, FBURL, Firebase, angularFireCollection) {
       $scope.newMessage = null;
 
       // constrain number of messages by passing a ref to angularFire
@@ -57,7 +57,7 @@ angular.module('myApp.controllers', [])
                   // must be logged in before I can write to my profile
                   $scope.login(function(err) {
                      if( !err ) {
-                        loginService.createProfile(user.id, user.email);
+                        loginService.createProfile(user.uid, user.email);
                      }
                   });
                }
@@ -68,7 +68,7 @@ angular.module('myApp.controllers', [])
 
    .controller('AccountCtrl', ['$scope', 'loginService', 'angularFire', 'FBURL', '$timeout', function($scope, loginService, angularFire, FBURL, $timeout) {
 
-      angularFire(FBURL+'/users/'+$scope.auth.id, $scope, 'user', {});
+      angularFire(FBURL+'/users/'+$scope.auth.uid, $scope, 'user', {});
 
       $scope.logout = function() {
          loginService.logout('/login');

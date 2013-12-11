@@ -8,9 +8,9 @@ The seed contains AngularJS libraries, test libraries and a bunch of scripts all
 instant web development gratification. Just clone the repo (or download the zip/tarball), start up
 our (or yours) webserver and you are ready to develop and test your application.
 
-The seed app doesn't do much, just shows how to wire two controllers and views together. You can
-check it out by opening app/index.html in your browser (might not work file `file://` scheme in
-certain browsers, see note below).
+The seed app doesn't do much, just shows how to wire controllers and views together and persist them
+in Firebase. You can check it out by opening app/index.html in your browser (might not work
+file `file://` scheme in certain browsers, see note below).
 
 _Note: While angular, angularFire, and Firebase can be used client-side-only, and it's possible to create
 apps that don't require a backend server at all, we recommend hosting the project files using a local
@@ -25,7 +25,7 @@ etc to function properly when an html page is opened via `file://` scheme instea
  1. Open app/js/config.js and add your Firebase URL
  1. Start hacking...
 
-### Running the app during development
+### Serving pages during development
 
 You can pick one of these options:
 
@@ -41,9 +41,12 @@ your browser.
 Make sure you set up security rules for your Firebase! An example for this
 seed can be found in `config/security-rules.json`
 
-This really depends on how complex is your app and the overall infrastructure of your system, but
+Go to your Forge (open your Firebase URL in the browser) and add your sites domain name under
+Auth -> Authorized Request Origins. This allows simple login to work from your web site as well as localhost.
+
+THe rest really depends on how complex is your app and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
-Everything else should be omitted.
+Everything else can be omitted.
 
 Angular apps are really just a bunch of static html, css and js files that just need to be hosted
 somewhere, where they can be accessed by browsers.
@@ -101,6 +104,7 @@ fetch the changes and merge them into your project with git.
       index-async.html  --> just like index.html, but loads js files asynchronously
       js/               --> javascript files
         app.js          --> application
+        config.js       --> custom angularFire config file
         controllers.js  --> application controllers
         directives.js   --> application directives
         filters.js      --> custom angular filters

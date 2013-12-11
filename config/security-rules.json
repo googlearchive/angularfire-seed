@@ -22,9 +22,8 @@
       },
       "users": {
          "$user": {
-            //".read": "auth.id === $user && auth.provider === 'password'", // for production
-            ".write": "auth.id === $user && auth.provider === 'password'",
-            ".validate": "newData.hasChildren(['name', 'email'])",
+            ".read": "auth.uid === $user",
+            ".write": "auth.uid === $user",
             "name": {
                ".validate": "newData.isString() && newData.val().length <= 2000"
             },

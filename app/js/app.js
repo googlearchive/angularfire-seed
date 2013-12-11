@@ -7,14 +7,14 @@ angular.module('myApp',
 
    // configure views; note the authRequired parameter for authenticated pages
    .config(['$routeProvider', function($routeProvider) {
-      $routeProvider.when('/view1', {
-         templateUrl: 'partials/view1.html',
-         controller: 'MyCtrl1'
+      $routeProvider.when('/home', {
+         templateUrl: 'partials/home.html',
+         controller: 'HomeCtrl'
       });
 
-      $routeProvider.when('/view2', {
-         templateUrl: 'partials/view2.html',
-         controller: 'MyCtrl2'
+      $routeProvider.when('/chat', {
+         templateUrl: 'partials/chat.html',
+         controller: 'ChatCtrl'
       });
 
       $routeProvider.when('/account', {
@@ -28,7 +28,7 @@ angular.module('myApp',
          controller: 'LoginCtrl'
       });
 
-      $routeProvider.otherwise({redirectTo: '/view1'});
+      $routeProvider.otherwise({redirectTo: '/home'});
    }])
 
    // double-check that the app has been configured
