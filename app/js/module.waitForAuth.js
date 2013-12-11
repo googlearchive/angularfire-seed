@@ -6,14 +6,14 @@
 angular.module('waitForAuth', [])
 
 /**
- * A service that returns a promise object, which is resolved once angularFireAuth
+ * A service that returns a promise object, which is resolved once $firebaseAuth
  * is initialized (i.e. it returns login, logout, or error)
  */
    .service('waitForAuth', function($rootScope, $q, $timeout) {
       var def = $q.defer(), subs = [];
-      subs.push($rootScope.$on('angularFireAuth:login', fn));
-      subs.push($rootScope.$on('angularFireAuth:logout', fn));
-      subs.push($rootScope.$on('angularFireAuth:error', fn));
+      subs.push($rootScope.$on('$firebaseAuth:login', fn));
+      subs.push($rootScope.$on('$firebaseAuth:logout', fn));
+      subs.push($rootScope.$on('$firebaseAuth:error', fn));
       function fn() {
          for(var i=0; i < subs.length; i++) { subs[i](); }
          $timeout(function() {
@@ -54,9 +54,9 @@ angular.module('waitForAuth', [])
                el.toggleClass('hide', loginState !== expState );
             }
             fn(null);
-            $rootScope.$on("angularFireAuth:login",  function() { fn('login') });
-            $rootScope.$on("angularFireAuth:logout", function() { fn('logout') });
-            $rootScope.$on("angularFireAuth:error",  function() { fn('error') });
+            $rootScope.$on("$firebaseAuth:login",  function() { fn('login') });
+            $rootScope.$on("$firebaseAuth:logout", function() { fn('logout') });
+            $rootScope.$on("$firebaseAuth:error",  function() { fn('error') });
          }
       }
    });

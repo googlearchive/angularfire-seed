@@ -6,7 +6,7 @@
 </form>
 
 <ul id="messages">
-    <li ng-repeat="message in messages | reverse">{{message.text}}</li>
+    <li ng-repeat="message in messages | orderByPriority | reverse">{{message.text}}</li>
 </ul>
 
 <p>

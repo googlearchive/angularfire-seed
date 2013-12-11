@@ -2,39 +2,39 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', [])
-   .controller('HomeCtrl', ['$scope', 'FBURL', 'angularFire', function($scope, FBURL, angularFire) {
-      angularFire(FBURL+'/syncedValue', $scope, 'syncedValue', '');
+angular.module('myApp.controllers', ['firebase'])
+   .controller('HomeCtrl', ['$scope', 'syncData', function($scope, syncData) {
+      syncData('syncedValue').$bind($scope, 'syncedValue');
    }])
 
-  .controller('ChatCtrl', ['$scope', 'FBURL', 'Firebase', 'angularFireCollection', function($scope, FBURL, Firebase, angularFireCollection) {
+  .controller('ChatCtrl', ['$scope', 'syncData', function($scope, syncData) {
       $scope.newMessage = null;
 
-      // constrain number of messages by passing a ref to angularFire
-      var ref = new Firebase(FBURL+'/messages').limit(10);
-      // add the array into $scope
-      $scope.messages = angularFireCollection(ref);
+      // constrain number of messages by limit into syncData
+      // add the array into $scope.messages
+      $scope.messages = syncData('messages', 10);
 
       // add new messages to the list
       $scope.addMessage = function() {
          if( $scope.newMessage ) {
-            $scope.messages.add({text: $scope.newMessage});
+            $scope.messages.$add({text: $scope.newMessage});
             $scope.newMessage = null;
          }
       };
    }])
 
-   .controller('LoginCtrl', ['$scope', 'loginService', function($scope, loginService) {
+   .controller('LoginCtrl', ['$scope', 'loginService', '$location', function($scope, loginService, $location) {
       $scope.email = null;
       $scope.pass = null;
       $scope.confirm = null;
       $scope.createMode = false;
 
-      $scope.login = function(callback) {
+      $scope.login = function() {
          $scope.err = null;
-         loginService.login($scope.email, $scope.pass, '/account', function(err, user) {
+         loginService.login($scope.email, $scope.pass, function(err, user) {
             $scope.err = err||null;
-            typeof(callback) === 'function' && callback(err, user);
+            $location.replace();
+            $location.path('/account');
          });
       };
 
@@ -66,35 +66,32 @@ angular.module('myApp.controllers', [])
       };
    }])
 
-   .controller('AccountCtrl', ['$scope', 'loginService', 'angularFire', 'FBURL', '$timeout', function($scope, loginService, angularFire, FBURL, $timeout) {
+   .controller('AccountCtrl', ['$scope', 'loginService', 'syncData', '$location', function($scope, loginService, syncData, $location) {
 
-      angularFire(FBURL+'/users/'+$scope.auth.uid, $scope, 'user', {});
+      syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
 
       $scope.logout = function() {
-         loginService.logout('/login');
+         loginService.logout();
+         $location.path('/login');
       };
 
       $scope.oldpass = null;
       $scope.newpass = null;
       $scope.confirm = null;
 
-      function reset() {
+      $scope.reset = function() {
          $scope.err = null;
          $scope.msg = null;
-      }
+      };
 
       $scope.updatePassword = function() {
-         reset();
+         $scope.reset();
          loginService.changePassword(buildPwdParms());
       };
 
-      $scope.$watch('oldpass', reset);
-      $scope.$watch('newpass', reset);
-      $scope.$watch('confirm', reset);
-
       function buildPwdParms() {
          return {
-            email: $scope.auth.email,
+            email: $scope.auth.user.email,
             oldpass: $scope.oldpass,
             newpass: $scope.newpass,
             confirm: $scope.confirm,
@@ -103,6 +100,9 @@ angular.module('myApp.controllers', [])
                   $scope.err = err;
                }
                else {
+                  $scope.oldpass = null;
+                  $scope.newpass = null;
+                  $scope.confirm = null;
                   $scope.msg = 'Password updated!';
                }
             }

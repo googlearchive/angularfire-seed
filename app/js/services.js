@@ -5,42 +5,90 @@
 
    angular.module('myApp.services', [])
 
-      .factory('loginService', ['angularFireAuth', 'profileCreator', '$location', '$rootScope',
-         function(angularFireAuth, profileCreator, $location, $rootScope) {
+      // a simple utility to create references to Firebase paths
+      .factory('firebaseRef', ['Firebase', 'FBURL', function(Firebase, FBURL) {
+         /**
+          * @function
+          * @name firebaseRef
+          * @param {String|Array...} path
+          * @return a Firebase instance
+          */
+         return function(path) {
+            return new Firebase(pathRef([FBURL].concat(Array.prototype.slice.call(arguments))));
+         }
+      }])
+
+      // a simple utility to create $firebase objects from angularFire
+      .service('syncData', ['$firebase', 'firebaseRef', function($firebase, firebaseRef) {
+         /**
+          * @function
+          * @name syncData
+          * @param {String|Array...} path
+          * @param {int} [limit]
+          * @return a Firebase instance
+          */
+         return function(path, limit) {
+            var ref = firebaseRef(path);
+            limit && (ref = ref.limit(limit));
+            return $firebase(ref);
+         }
+      }])
+
+      .factory('loginService', ['$rootScope', '$firebaseAuth', 'firebaseRef', 'profileCreator', '$timeout',
+         function($rootScope, $firebaseAuth, firebaseRef, profileCreator, $timeout) {
+            var auth = null;
             return {
+               init: function(path) {
+                  return auth = $firebaseAuth(firebaseRef(), {path: path});
+               },
+
                /**
                 * @param {string} email
                 * @param {string} pass
-                * @param {string} [redirect]
                 * @param {Function} [callback]
                 * @returns {*}
                 */
-               login: function(email, pass, redirect, callback) {
-                  var p = angularFireAuth.login('password', {
+               login: function(email, pass, callback) {
+                  assertAuth();
+
+                  if( callback ) {
+                     var subs = [];
+                     var fn = function(err, user) {
+                        angular.forEach(subs, function(s) {s();});
+                        //$timeout(function() {
+                        callback(err, user);
+                         //});
+                     };
+                     subs.push($rootScope.$on('$firebaseAuth:login', function(evt, user) {
+                        fn(null, user);
+                     }));
+                     subs.push($rootScope.$on('$firebaseAuth:logout', function(evt) {
+                        fn();
+                     }));
+                     subs.push($rootScope.$on('$firebaseAuth:error', function(evt, err) {
+                        console.error('login failed', err);
+                        fn(err);
+                     }));
+                  }
+
+                  auth.$login('password', {
                      email: email,
                      password: pass,
                      rememberMe: true
                   });
 
-                  p.then(function(user) {
-                     if( redirect ) {
-                        $location.path(redirect);
-                     }
-                     callback && callback(null, user);
-                  }, callback);
+//                  .then(function(user) {
+//                     callback && callback(null, user);
+//                  }, callback);
                },
 
-               /**
-                * @param {string} [redirectPath]
-                */
-               logout: function(redirectPath) {
-                  angularFireAuth.logout();
-                  if( redirectPath ) {
-                     $location.path(redirectPath);
-                  }
+               logout: function() {
+                  assertAuth();
+                  auth.$logout();
                },
 
                changePassword: function(opts) {
+                  assertAuth();
                   if( !opts.oldpass || !opts.newpass ) {
                      opts.callback('Please enter a password');
                   }
@@ -48,33 +96,44 @@
                      opts.callback('Passwords do not match');
                   }
                   else {
-                     angularFireAuth._authClient.changePassword(opts.email, opts.oldpass, opts.newpass, function(err) {
-                        opts.callback(errMsg(err));
-                        $rootScope.$apply();
+                     //todo-hack
+                     var ref = firebaseRef();
+                     var authHack = new FirebaseSimpleLogin(ref, function() {});
+                     authHack.changePassword(opts.email, opts.oldpass, opts.newpass, function(err) {
+                        $timeout(function() {
+                           opts.callback(errMsg(err));
+                        });
                      })
                   }
                },
 
                createAccount: function(email, pass, callback) {
-                  angularFireAuth._authClient.createUser(email, pass, function(err, user) {
+                  assertAuth();
+                  auth.$createUser(email, pass, function(err, user) {
                      if( callback ) {
-                        callback(err, user);
-                        $rootScope.$apply();
+                        $timeout(function() {
+                           callback(err, user);
+                        });
                      }
                   });
                },
 
                createProfile: profileCreator
+            };
+
+            function assertAuth() {
+               if( auth === null ) { throw new Error('Must call loginService.init() before using its methods'); }
             }
          }])
 
-      .factory('profileCreator', ['Firebase', 'FBURL', '$rootScope', function(Firebase, FBURL, $rootScope) {
+      .factory('profileCreator', ['firebaseRef', '$timeout', function(firebaseRef, $timeout) {
          return function(id, email, callback) {
-            new Firebase(FBURL).child('users/'+id).set({email: email, name: firstPartOfEmail(email)}, function(err) {
+            firebaseRef('users/'+id).set({email: email, name: firstPartOfEmail(email)}, function(err) {
                //err && console.error(err);
                if( callback ) {
-                  callback(err);
-                  $rootScope.$apply();
+                  $timeout(function() {
+                     callback(err);
+                  })
                }
             });
 
@@ -83,12 +142,7 @@
             }
 
             function ucfirst (str) {
-               // http://kevin.vanzonneveld.net
-               // +   original by: Kevin van Zonneveld (http://kevin.vanzonneveld.net)
-               // +   bugfixed by: Onno Marsman
-               // +   improved by: Brett Zamir (http://brett-zamir.me)
-               // *     example 1: ucfirst('kevin van zonneveld');
-               // *     returns 1: 'Kevin van zonneveld'
+               // credits: http://kevin.vanzonneveld.net
                str += '';
                var f = str.charAt(0).toUpperCase();
                return f + str.substr(1);
@@ -98,6 +152,15 @@
 
    function errMsg(err) {
       return err? '['+err.code+'] ' + err.toString() : null;
+   }
+
+   function pathRef(args) {
+      for(var i=0; i < args.length; i++) {
+         if( typeof(args[i]) === 'object' ) {
+            args[i] = pathRef(args[i]);
+         }
+      }
+      return args.join('/');
    }
 })();
 

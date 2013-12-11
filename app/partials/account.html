@@ -21,17 +21,17 @@
 
         <label>
             <span>Old Password:</span>
-            <input type="password" ng-model="oldpass"/>
+            <input type="password" ng-keypress="reset()" ng-model="oldpass"/>
         </label>
 
         <label>
             <span>New Password:</span>
-            <input type="password" ng-model="newpass"/>
+            <input type="password" ng-keypress="reset()" ng-model="newpass"/>
         </label>
 
         <label>
             <span>Confirm Password:</span>
-            <input type="password" ng-model="confirm"/>
+            <input type="password" ng-keypress="reset()" ng-model="confirm"/>
         </label>
 
         <button ng-click="updatePassword()">update password</button>
