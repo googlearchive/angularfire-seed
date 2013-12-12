@@ -5,173 +5,169 @@
 describe('service', function() {
    beforeEach(module('myApp.services'));
 
-   beforeEach(module(function($provide) {
-      $provide.value('Firebase', firebaseStub());
-      $provide.value('$location', stub('path'));
-      $provide.value('FBURL', 'FAKE_FB_URL');
-      $provide.value('angularFireAuth', angularAuthStub());
-   }));
-
    describe('loginService', function() {
+      beforeEach(module(function($provide) {
+         // mock dependencies used by our services to isolate testing
+         $provide.value('Firebase', firebaseStub());
+         $provide.value('$location', stub('path'));
+         $provide.value('$firebaseAuth', angularAuthStub());
+         $provide.value('firebaseRef', firebaseStub());
+      }));
+
       describe('#login', function() {
-         it('should return error if angularFireAuth.login fails',
-            inject(function($q, $rootScope, loginService, angularFireAuth) {
+         it('should return error if $firebaseAuth.$login fails',
+            inject(function($q, $rootScope, loginService, $firebaseAuth) {
                var cb = jasmine.createSpy();
-               angularFireAuth.login.andReturn(reject($q, 'test_error'));
-               loginService.login('test@test.com', '123', null, cb);
+               loginService.init('/login');
+               $firebaseAuth.fns.$login.andReturn(reject($q, 'test_error'));
+               loginService.login('test@test.com', '123', cb);
                $rootScope.$apply();
                expect(cb).toHaveBeenCalledWith('test_error');
             })
          );
 
-         it('should return user if angularFireAuth.login succeeds',
-            inject(function(loginService, angularFireAuth, $rootScope, $q) {
+         it('should return user if $firebaseAuth.$login succeeds',
+            inject(function(loginService, $firebaseAuth, $rootScope, $q) {
                var cb = jasmine.createSpy();
-               angularFireAuth.login.andReturn(resolve($q, {hello: 'world'}));
-               loginService.login('test@test.com', '123', null, cb);
+               loginService.init('/login');
+               $firebaseAuth.fns.$login.andReturn(resolve($q, {hello: 'world'}));
+               loginService.login('test@test.com', '123', cb);
                $rootScope.$apply();
                expect(cb).toHaveBeenCalledWith(null, {hello: 'world'});
             })
          );
-
-         it('should invoke the redirect if angularFireAuth.login succeeds',
-            inject(function(loginService, angularFireAuth, $rootScope, $location, $q) {
-               angularFireAuth.login.andReturn(resolve($q, {hello: 'world'}));
-               loginService.login('test@test.com', '123', '/hello');
-               $rootScope.$apply();
-               expect($location.path).toHaveBeenCalledWith('/hello');
-            })
-         );
-
-         it('should not invoke the redirect if angularFireAuth.login fails',
-            inject(function(loginService, angularFireAuth, $rootScope, $location, $q) {
-               angularFireAuth.login.andReturn(reject($q, 'Nooooooo!'));
-               loginService.login('test@test.com', '123', '/hello');
-               $rootScope.$apply();
-               expect($location.path).not.toHaveBeenCalled();
-            })
-         )
       });
 
       describe('#logout', function() {
-         it('should invoke angularFireAuth.logout()', function() {
-            inject(function(loginService, angularFireAuth) {
-               loginService.logout('/bye');
-               expect(angularFireAuth.logout).toHaveBeenCalled();
-            });
-         });
-
-         it('should invoke redirect after calling logout', function() {
-            inject(function(loginService, angularFireAuth, $rootScope, $location) {
-               loginService.logout('/bye');
-               expect($location.path).toHaveBeenCalledWith('/bye');
+         it('should invoke $firebaseAuth.$logout()', function() {
+            inject(function(loginService, $firebaseAuth) {
+               loginService.init('/login');
+               loginService.logout();
+               expect($firebaseAuth.fns.$logout).toHaveBeenCalled();
             });
          });
       });
 
       describe('#changePassword', function() {
+         beforeEach(inject(function($timeout, $firebaseAuth) {
+            customSpy($firebaseAuth.fns, '$changePassword', function(eml, op, np, cb) { $timeout(function() { cb(null); }) });
+         }));
+
          it('should fail if old password is missing',
-            inject(function(loginService, angularFireAuth) {
+            inject(function(loginService, $firebaseAuth, $timeout) {
                var cb = jasmine.createSpy();
+               loginService.init('/login');
                loginService.changePassword({
                   newpass: 123,
                   confirm: 123,
                   callback: cb
                });
+               flush($timeout);
                expect(cb).toHaveBeenCalledWith('Please enter a password');
-               expect(angularFireAuth.changePassword).not.toHaveBeenCalled();
+               expect($firebaseAuth.fns.$changePassword).not.toHaveBeenCalled();
             })
          );
 
          it('should fail if new password is missing',
-            inject(function(loginService, angularFireAuth) {
+            inject(function(loginService, $firebaseAuth, $timeout) {
                var cb = jasmine.createSpy();
+               loginService.init('/login');
                loginService.changePassword({
                   oldpass: 123,
                   confirm: 123,
                   callback: cb
                });
+               flush($timeout);
                expect(cb).toHaveBeenCalledWith('Please enter a password');
-               expect(angularFireAuth.changePassword).not.toHaveBeenCalled();
+               expect($firebaseAuth.fns.$changePassword).not.toHaveBeenCalled();
             })
          );
 
          it('should fail if passwords don\'t match',
-            inject(function(loginService, angularFireAuth) {
+            inject(function(loginService, $firebaseAuth, $timeout) {
                var cb = jasmine.createSpy();
+               loginService.init('/login');
                loginService.changePassword({
                   oldpass: 123,
                   newpass: 123,
                   confirm: 124,
                   callback: cb
                });
+               flush($timeout);
                expect(cb).toHaveBeenCalledWith('Passwords do not match');
-               expect(angularFireAuth.changePassword).not.toHaveBeenCalled();
+               expect($firebaseAuth.fns.$changePassword).not.toHaveBeenCalled();
             })
          );
 
-         it('should fail if angularFireAuth fails',
-            inject(function(loginService, angularFireAuth) {
+         it('should fail if $firebaseAuth fails',
+            inject(function(loginService, $firebaseAuth, $timeout) {
                var cb = jasmine.createSpy();
-               customSpy(angularFireAuth._authClient, 'changePassword', function(oldp, newp, confp, cb) {
+               customSpy($firebaseAuth.fns, '$changePassword', function(email, op, np, cb) {
                   cb(new ErrorWithCode(123, 'errr'));
                });
+               loginService.init('/login');
                loginService.changePassword({
                   oldpass: 124,
                   newpass: 123,
                   confirm: 123,
                   callback: cb
                });
+               flush($timeout);
                expect(cb).toHaveBeenCalledWith('[123] errr');
-               expect(angularFireAuth._authClient.changePassword).toHaveBeenCalled();
+               expect($firebaseAuth.fns.$changePassword).toHaveBeenCalled();
             })
          );
 
-         it('should return null if angularFireAuth succeeds',
-            inject(function(loginService, angularFireAuth) {
+         it('should return null if $firebaseAuth succeeds',
+            inject(function(loginService, $firebaseAuth, $timeout) {
                var cb = jasmine.createSpy();
-               customSpy(angularFireAuth._authClient, 'changePassword', function(oldp, newp, confp, cb) {
-                  cb(null);
-               });
+               loginService.init('/login');
                loginService.changePassword({
                   oldpass: 124,
                   newpass: 123,
                   confirm: 123,
                   callback: cb
                });
+               flush($timeout);
                expect(cb).toHaveBeenCalledWith(null);
-               expect(angularFireAuth._authClient.changePassword).toHaveBeenCalled();
+               expect($firebaseAuth.fns.$changePassword).toHaveBeenCalled();
             })
          );
       });
 
       describe('#createAccount', function() {
-         it('should invoke angularFireAuth',
-            inject(function(loginService, angularFireAuth) {
+         beforeEach(inject(function($timeout, $firebaseAuth) {
+            customSpy($firebaseAuth.fns, '$createUser', function(eml, pass, cb) { $timeout(function() { cb(null); }) });
+         }));
+
+         it('should invoke $firebaseAuth',
+            inject(function(loginService, $firebaseAuth) {
+               loginService.init('/login');
                loginService.createAccount('test@test.com', 123);
-               expect(angularFireAuth._authClient.createUser).toHaveBeenCalled();
+               expect($firebaseAuth.fns.$createUser).toHaveBeenCalled();
             })
          );
 
          it('should invoke callback if error',
-            inject(function(loginService, angularFireAuth) {
+            inject(function(loginService, $timeout, $firebaseAuth) {
                var cb = jasmine.createSpy(), undefined;
-               customSpy(angularFireAuth._authClient, 'createUser', function(e, p, cb) {
-                  cb('errr');
+               customSpy($firebaseAuth.fns, '$createUser', function(email, pass, cb) {
+                  cb('joy!');
                });
+               loginService.init('/login');
                loginService.createAccount('test@test.com', 123, cb);
-               expect(cb).toHaveBeenCalledWith('errr', undefined);
+               flush($timeout);
+               expect(cb).toHaveBeenCalledWith('joy!');
             })
          );
 
          it('should invoke callback if success',
-            inject(function(loginService, angularFireAuth) {
+            inject(function(loginService, $timeout) {
                var cb = jasmine.createSpy();
-               customSpy(angularFireAuth._authClient, 'createUser', function(e, p, cb) {
-                  cb(null, 'oh hai!');
-               });
+               loginService.init('/login');
                loginService.createAccount('test@test.com', 123, cb);
-               expect(cb).toHaveBeenCalledWith(null, 'oh hai!');
+               flush($timeout);
+               expect(cb).toHaveBeenCalledWith(null);
             })
          )
       });
@@ -186,27 +182,37 @@ describe('service', function() {
    });
 
    describe('profileCreator', function() {
+      beforeEach(module(function($provide) {
+         // mock dependencies used by our services to isolate testing
+         $provide.value('Firebase', firebaseStub());
+         $provide.value('$location', stub('path'));
+         $provide.value('$firebaseAuth', angularAuthStub());
+         $provide.value('firebaseRef', firebaseStub());
+      }));
+
       it('should invoke set on Firebase',
-         inject(function(profileCreator, Firebase) {
+         inject(function(profileCreator, firebaseRef, $timeout) {
             profileCreator(123, 'test@test.com');
-            expect(Firebase.fns.set.argsForCall[0][0]).toEqual({email: 'test@test.com', name: 'Test'});
+            flush($timeout);
+            expect(firebaseRef.fns.set.argsForCall[0][0]).toEqual({email: 'test@test.com', name: 'Test'});
          })
       );
 
       it('should invoke the callback', function() {
-         inject(function(profileCreator, Firebase) {
+         inject(function(profileCreator, $timeout) {
             var cb = jasmine.createSpy();
-            customSpy(Firebase.fns, 'set', function(val, cb) { cb(); });
             profileCreator(456, 'test2@test2.com', cb);
+            flush($timeout);
             expect(cb).toHaveBeenCalled();
          })
       });
 
       it('should return any error in the callback',
-         inject(function(profileCreator, Firebase) {
+         inject(function(profileCreator, firebaseRef, $timeout) {
             var cb = jasmine.createSpy();
-            customSpy(Firebase.fns, 'set', function(val, cb) { cb('noooooo'); });
+            firebaseRef.fns.callbackVal = 'noooooo';
             profileCreator(456, 'test2@test2.com', cb);
+            flush($timeout);
             expect(cb).toHaveBeenCalledWith('noooooo');
          })
       );
@@ -236,27 +242,29 @@ describe('service', function() {
       // firebase is invoked using new Firebase, but we need a static ref
       // to the functions before it is instantiated, so we cheat here by
       // attaching the functions as Firebase.fns, and ignore new (we don't use `this` or `prototype`)
-      var fns = stub('set');
-      customSpy(fns, 'child', function() { return fns; });
-
-      var Firebase = function() {
-         angular.extend(this, fns);
-         return fns;
+      var FirebaseStub = function() {
+         return FirebaseStub.fns;
       };
-      Firebase.fns = fns;
-
-      return Firebase;
+      FirebaseStub.fns = { callbackVal: null };
+      customSpy(FirebaseStub.fns, 'set', function(value, cb) { cb && cb(FirebaseStub.fns.callbackVal); });
+      customSpy(FirebaseStub.fns, 'child', function() { return FirebaseStub.fns; });
+      return FirebaseStub;
    }
 
    function angularAuthStub() {
-      var auth = stub('login', 'logout', 'createAccount', 'changePassword');
-      auth._authClient = stub('changePassword', 'createUser');
-      return auth;
+      function AuthStub() { return AuthStub.fns; }
+      AuthStub.fns = stub('$login', '$logout');
+      return AuthStub;
    }
 
    function customSpy(obj, m, fn) {
       obj[m] = fn;
       spyOn(obj, m).andCallThrough();
+   }
+
+   function flush($timeout) {
+      try { $timeout.flush(); }
+      catch(e) {} // is okay
    }
 
    function ErrorWithCode(code, msg) {

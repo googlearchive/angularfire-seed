@@ -50,36 +50,13 @@
                 */
                login: function(email, pass, callback) {
                   assertAuth();
-
-                  if( callback ) {
-                     var subs = [];
-                     var fn = function(err, user) {
-                        angular.forEach(subs, function(s) {s();});
-                        //$timeout(function() {
-                        callback(err, user);
-                         //});
-                     };
-                     subs.push($rootScope.$on('$firebaseAuth:login', function(evt, user) {
-                        fn(null, user);
-                     }));
-                     subs.push($rootScope.$on('$firebaseAuth:logout', function(evt) {
-                        fn();
-                     }));
-                     subs.push($rootScope.$on('$firebaseAuth:error', function(evt, err) {
-                        console.error('login failed', err);
-                        fn(err);
-                     }));
-                  }
-
                   auth.$login('password', {
                      email: email,
                      password: pass,
                      rememberMe: true
-                  });
-
-//                  .then(function(user) {
-//                     callback && callback(null, user);
-//                  }, callback);
+                  }).then(function(user) {
+                     callback && callback(null, user);
+                   }, callback);
                },
 
                logout: function() {
@@ -89,33 +66,23 @@
 
                changePassword: function(opts) {
                   assertAuth();
+                  var cb = opts.callback || function() {};
                   if( !opts.oldpass || !opts.newpass ) {
-                     opts.callback('Please enter a password');
+                     $timeout(function(){ cb('Please enter a password'); });
                   }
                   else if( opts.newpass !== opts.confirm ) {
-                     opts.callback('Passwords do not match');
+                     $timeout(function() { cb('Passwords do not match'); });
                   }
                   else {
-                     //todo-hack
-                     var ref = firebaseRef();
-                     var authHack = new FirebaseSimpleLogin(ref, function() {});
-                     authHack.changePassword(opts.email, opts.oldpass, opts.newpass, function(err) {
-                        $timeout(function() {
-                           opts.callback(errMsg(err));
-                        });
-                     })
+                     auth.$changePassword(opts.email, opts.oldpass, opts.newpass, function(err) {
+                        cb(err? errMsg(err) : null);
+                     });
                   }
                },
 
                createAccount: function(email, pass, callback) {
                   assertAuth();
-                  auth.$createUser(email, pass, function(err, user) {
-                     if( callback ) {
-                        $timeout(function() {
-                           callback(err, user);
-                        });
-                     }
-                  });
+                  auth.$createUser(email, pass, callback);
                },
 
                createProfile: profileCreator
@@ -151,7 +118,7 @@
       }]);
 
    function errMsg(err) {
-      return err? '['+err.code+'] ' + err.toString() : null;
+      return err? typeof(err) === 'object'? '['+err.code+'] ' + err.toString() : err+'' : null;
    }
 
    function pathRef(args) {
