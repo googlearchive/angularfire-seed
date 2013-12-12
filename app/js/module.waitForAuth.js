@@ -31,7 +31,6 @@ angular.module('waitForAuth', [])
       return {
          restrict: 'A',
          compile: function(el) {
-            console.log('waiting');
             el.addClass('hide');
             waitForAuth.then(function() {
                el.removeClass('hide');

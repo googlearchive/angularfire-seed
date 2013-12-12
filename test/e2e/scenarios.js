@@ -2,28 +2,12 @@
 
 /* http://docs.angularjs.org/guide/dev_guide.e2e-testing */
 
-angular.scenario.dsl('angularFireLogin', function() {
-   return function() {
-      return this.addFutureAction('Logging in', function($window, $document, done) {
-         var angularFireAuth = $document.injector().get('angularFireAuth');
-         return angularFireAuth.login('password', {
-            email: 'test@test.com',
-            password: 'test123',
-            rememberMe: false
-         }).then(function(user) {
-               done(null, user);
-            }, function(err) {
-               done(err);
-            });
-      });
-   }
-});
-
 angular.scenario.dsl('angularFireLogout', function() {
    return function() {
       this.addFutureAction('Logging out', function($window, $document, done) {
-         var angularFireAuth = $document.injector().get('angularFireAuth');
-         angularFireAuth.logout();
+         var fbRef = $document.injector().get('firebaseRef');
+         var $firebaseAuth = $document.injector().get('$firebaseAuth');
+         $firebaseAuth(fbRef()).$logout();
          done(null, true);
       });
    }
@@ -78,7 +62,10 @@ describe('my app', function() {
       });
 
       it('should stay on account screen if authenticated', function() {
-         expect(angularFireLogin()).toBeTruthy();
+         this.addFutureAction('authenticate', function($window, $document, done) {
+            var loginService = $document.injector().get('loginService');
+            loginService.login('test@test.com', 'test123', done);
+         });
          browser().navigateTo('#/account');
          expect(browser().window().hash()).toBe('/account');
       });
@@ -99,14 +86,16 @@ describe('my app', function() {
 
       it('should show error if no email', function() {
          expect(element('p.error').text()).toEqual('');
+         input('email').enter('');
          input('pass').enter('test123');
          element('button[ng-click="login()"]').click();
-         expect(element('p.error').text()).not().toEqual('')
+         expect(element('p.error').text()).not().toEqual('');
       });
 
       it('should show error if no password', function() {
          expect(element('p.error').text()).toEqual('');
          input('email').enter('test@test.com');
+         input('pass').enter('');
          element('button[ng-click="login()"]').click();
          expect(element('p.error').text()).not().toEqual('')
       });

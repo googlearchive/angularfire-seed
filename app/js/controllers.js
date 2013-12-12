@@ -31,11 +31,19 @@ angular.module('myApp.controllers', [])
 
       $scope.login = function() {
          $scope.err = null;
-         loginService.login($scope.email, $scope.pass, function(err, user) {
-            $scope.err = err||null;
-            $location.replace();
-            $location.path('/account');
-         });
+         if( !$scope.email ) {
+            $scope.err = 'Please enter an email address';
+         }
+         else if( !$scope.pass ) {
+            $scope.err = 'Please enter a password';
+         }
+         else {
+            loginService.login($scope.email, $scope.pass, function(err, user) {
+               $scope.err = err||null;
+               $location.replace();
+               $location.path('/account');
+            });
+         }
       };
 
       $scope.createAccount = function() {
@@ -67,7 +75,6 @@ angular.module('myApp.controllers', [])
    }])
 
    .controller('AccountCtrl', ['$scope', 'loginService', 'syncData', '$location', function($scope, loginService, syncData, $location) {
-
       syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
 
       $scope.logout = function() {
