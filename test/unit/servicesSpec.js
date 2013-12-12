@@ -113,7 +113,7 @@ describe('service', function() {
                   callback: cb
                });
                flush($timeout);
-               expect(cb).toHaveBeenCalledWith('[123] errr');
+               expect(cb.argsForCall[0][0].toString()).toBe('errr');
                expect($firebaseAuth.fns.$changePassword).toHaveBeenCalled();
             })
          );

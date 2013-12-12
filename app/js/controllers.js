@@ -39,7 +39,7 @@ angular.module('myApp.controllers', [])
          }
          else {
             loginService.login($scope.email, $scope.pass, function(err, user) {
-               $scope.err = err||null;
+               $scope.err = err? err + '' : null;
                if( !err ) {
                   $location.replace();
                   $location.path('/account');
@@ -61,7 +61,7 @@ angular.module('myApp.controllers', [])
          else {
             loginService.createAccount($scope.email, $scope.pass, function(err, user) {
                if( err ) {
-                  $scope.err = err;
+                  $scope.err = err? err + '' : null;
                }
                else {
                   // must be logged in before I can write to my profile
