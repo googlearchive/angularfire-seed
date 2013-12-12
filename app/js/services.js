@@ -56,7 +56,7 @@
                      rememberMe: true
                   }).then(function(user) {
                      callback && callback(null, user);
-                   }, callback);
+                  }, callback);
                },
 
                logout: function() {
@@ -74,9 +74,7 @@
                      $timeout(function() { cb('Passwords do not match'); });
                   }
                   else {
-                     auth.$changePassword(opts.email, opts.oldpass, opts.newpass, function(err) {
-                        cb(err? errMsg(err) : null);
-                     });
+                     auth.$changePassword(opts.email, opts.oldpass, opts.newpass, cb);
                   }
                },
 

@@ -40,8 +40,10 @@ angular.module('myApp.controllers', [])
          else {
             loginService.login($scope.email, $scope.pass, function(err, user) {
                $scope.err = err||null;
-               $location.replace();
-               $location.path('/account');
+               if( !err ) {
+                  $location.replace();
+                  $location.path('/account');
+               }
             });
          }
       };

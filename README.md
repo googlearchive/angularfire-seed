@@ -23,6 +23,7 @@ etc to function properly when an html page is opened via `file://` scheme instea
 
  1. Clone the angularFire-seed repository
  1. Open app/js/config.js and add your Firebase URL
+ 1. Go to your Firebase URL and enable email/password authentication under the Auth tab
  1. Start hacking...
 
 ### Serving pages during development
@@ -30,7 +31,7 @@ etc to function properly when an html page is opened via `file://` scheme instea
 You can pick one of these options:
 
 * serve this repository with your webserver
-* install node.js and run `scripts/web-server.js`
+* install node.js and run `node scripts/web-server.js`
 
 Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
 your browser.
@@ -44,7 +45,7 @@ seed can be found in `config/security-rules.json`
 Go to your Forge (open your Firebase URL in the browser) and add your sites domain name under
 Auth -> Authorized Request Origins. This allows simple login to work from your web site as well as localhost.
 
-THe rest really depends on how complex is your app and the overall infrastructure of your system, but
+The rest really depends on how complex is your app and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
 Everything else can be omitted.
 
@@ -110,17 +111,14 @@ fetch the changes and merge them into your project with git.
         filters.js      --> custom angular filters
         services.js     --> custom angular services
       lib/              --> angular and 3rd party javascript libraries
-        angular/
-          angular.js        --> the latest angular js
-          angular.min.js    --> the latest minified angular js
-          angular-*.js      --> angular add-on modules
+        angular/        --> the latest angular js libs
           version.txt       --> version number
         firebase/
-          angularFire.js    --> the angularFire adapter
+          angularFire.*.js  --> the angularFire adapter
       partials/             --> angular view partials (partial html templates)
-        partial1.html       --> a rudimentary angularFire example
-        partial2.html       --> a rudimentary angularFireCollection example
-        login.html          --> authentication and registration using angularFire email/password auth
+        home.html           --> a rudimentary $firebase().$bind() example
+        chat.html           --> a $firebase() sync used as an array, with explicit bindings
+        login.html          --> authentication and registration using $firebaseAuth
         account.html        --> a secured page (must login to view this)
 
     config/karma.conf.js        --> config file for running unit tests with Karma
@@ -144,11 +142,7 @@ fetch the changes and merge them into your project with git.
           angular-scenario.js   --> angular's scenario (end-to-end) test runner library
           version.txt           --> version file
       unit/                     --> unit level specs/tests
-        configSpec.js           --> specs for config.js file
-        controllersSpec.js      --> specs for controllers
-        directivessSpec.js      --> specs for directives
-        filtersSpec.js          --> specs for filters
-        servicesSpec.js         --> specs for services
+        *Spec.js                --> specs for a specific module in app/js
 
 ## Contact
 
