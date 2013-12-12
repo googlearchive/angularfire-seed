@@ -98,13 +98,24 @@ AngularFire.prototype = {
       };
 
       // Add an object to the remote data. Adding an object is the
-      // equivalent of calling `push()` on a Firebase reference.
-      object.$add = function(item) {
+      // equivalent of calling `push()` on a Firebase reference. It takes
+      // up to two arguments:
+      //
+      //    * `item`: The object or primitive to add.
+      //    * `cb`  : An optional callback function to be invoked when the
+      //              item is added to the Firebase server. It will be called
+      //              with an Error object if one occurred, null otherwise.
+      //
+      // This function returns a Firebase reference to the newly added object
+      // or primitive. The key name can be extracted using `ref.name()`.
+      object.$add = function(item, cb) {
+         var ref;
          if (typeof item == "object") {
-            self._fRef.ref().push(self._parseObject(item));
+            ref = self._fRef.ref().push(self._parseObject(item), cb);
          } else {
-            self._fRef.ref().push(item);
+            ref = self._fRef.ref().push(item, cb);
          }
+         return ref;
       };
 
       // Save the current state of the object (or a child) to the remote.
@@ -279,8 +290,7 @@ AngularFire.prototype = {
          var local = self._parse(self._name)(self._scope);
          // If remote value matches local value, don't do anything, otherwise
          // apply the change.
-         if (!angular.equals(current, angular.copy(local))) {
-            console.log('update model', current, angular.copy(local)); //debug
+         if (!angular.equals(current, local)) {
             self._parse(self._name).assign(self._scope, angular.copy(current));
          }
       });
@@ -300,7 +310,6 @@ AngularFire.prototype = {
          if (self._bound) {
             var local = self._parse(self._name)(self._scope);
             if (!angular.equals(value, local)) {
-               console.log('primitive changed', value, local); //debug
                self._parse(self._name).assign(self._scope, value);
             }
          }
@@ -535,6 +544,7 @@ AngularFireAuth.prototype = {
          case "twitter":
          case "facebook":
          case "password":
+         case "anonymous":
             if (!self._authClient) {
                var err = new Error("Simple Login not initialized");
                self._rootScope.$broadcast("$firebaseAuth:error", err);
@@ -599,8 +609,8 @@ AngularFireAuth.prototype = {
    _loggedIn: function(user) {
       var self = this;
       self._timeout(function() {
-         self._authenticated = true;
          self._object.user = user;
+         self._authenticated = true;
          self._rootScope.$broadcast("$firebaseAuth:login", user);
          if (self._redirectTo) {
             self._location.replace();
