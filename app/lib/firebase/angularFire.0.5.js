@@ -5,7 +5,7 @@
 // as normal, except that the changes are also sent to all other clients
 // instead of just a server.
 //
-//      AngularFire 0.5
+//      AngularFire 0.5.0
 //      http://angularfire.com
 //      License: MIT
 
@@ -37,6 +37,17 @@ angular.module("firebase").factory("$firebase", ["$q", "$parse", "$timeout",
 angular.module("firebase").filter("orderByPriority", function() {
    return function(input) {
       if (!input.$getIndex || typeof input.$getIndex != "function") {
+         // If input is an object, map it to an array for the time being.
+         var type = Object.prototype.toString.call(input);
+         if (typeof input == "object" && type == "[object Object]") {
+            var ret = [];
+            for (var prop in input) {
+               if (input.hasOwnProperty(prop)) {
+                  ret.push(input[prop]);
+               }
+            }
+            return ret;
+         }
          return input;
       }
 
@@ -198,7 +209,7 @@ AngularFire.prototype = {
    // a primitive, we'll continue to watch for value changes.
    _getInitialValue: function() {
       var self = this;
-      self._fRef.on("value", function(snapshot) {
+      var gotInitialValue = function(snapshot) {
          var value = snapshot.val();
 
          switch (typeof value) {
@@ -211,7 +222,7 @@ AngularFire.prototype = {
             // For arrays and objects, switch to child methods.
             case "object":
                self._getChildValues();
-               self._fRef.off("value");
+               self._fRef.off("value", gotInitialValue);
                break;
             default:
                throw new Error("Unexpected type from remote data " + typeof value);
@@ -219,7 +230,9 @@ AngularFire.prototype = {
 
          // Call handlers for the "loaded" event.
          self._broadcastEvent("loaded", value);
-      });
+      };
+
+      self._fRef.on("value", gotInitialValue);
    },
 
    // This function attaches child events for object and array types.
@@ -418,8 +431,8 @@ AngularFire.prototype = {
 // Defines the `$firebaseAuth` service that provides authentication support
 // for AngularFire.
 angular.module("firebase").factory("$firebaseAuth", [
-   "$timeout", "$injector", "$rootScope", "$location",
-   function($t, $i, $rs, $l) {
+   "$q", "$timeout", "$injector", "$rootScope", "$location",
+   function($q, $t, $i, $rs, $l) {
       // The factory returns an object containing the authentication state
       // of the current user. This service takes 2 arguments:
       //
@@ -447,13 +460,14 @@ angular.module("firebase").factory("$firebaseAuth", [
       // The returned object will also have the following methods available:
       // $login(), $logout() and $createUser().
       return function(ref, options) {
-         var auth = new AngularFireAuth($t, $i, $rs, $l, ref, options);
+         var auth = new AngularFireAuth($q, $t, $i, $rs, $l, ref, options);
          return auth.construct();
       };
    }
 ]);
 
-AngularFireAuth = function($t, $i, $rs, $l, ref, options) {
+AngularFireAuth = function($q, $t, $i, $rs, $l, ref, options) {
+   this._q = $q;
    this._timeout = $t;
    this._injector = $i;
    this._location = $l;
@@ -521,8 +535,16 @@ AngularFireAuth.prototype = {
       var client = new FirebaseSimpleLogin(self._fRef, function(err, user) {
          self._cb(err, user);
          if (err) {
+            if (self._deferred) {
+               self._deferred.reject(err);
+               self._deferred = null;
+            }
             self._rootScope.$broadcast("$firebaseAuth:error", err);
          } else if (user) {
+            if (self._deferred) {
+               self._deferred.resolve(user);
+               self._deferred = null;
+            }
             self._loggedIn(user);
          } else {
             self._loggedOut();
@@ -535,9 +557,12 @@ AngularFireAuth.prototype = {
 
    // The login method takes a provider (for Simple Login) or a token
    // (for Custom Login) and authenticates the Firebase URL with which
-   // the service was initialized.
+   // the service was initialized. This method returns a promise, which will
+   // be resolved when the login succeeds (and rejected when an error occurs).
    login: function(tokenOrProvider, options) {
       var self = this;
+      var deferred = self._q.defer();
+
       switch (tokenOrProvider) {
          case "github":
          case "persona":
@@ -547,8 +572,10 @@ AngularFireAuth.prototype = {
          case "anonymous":
             if (!self._authClient) {
                var err = new Error("Simple Login not initialized");
+               deferred.reject(err);
                self._rootScope.$broadcast("$firebaseAuth:error", err);
             } else {
+               self._deferred = deferred;
                self._authClient.login(tokenOrProvider, options);
             }
             break;
@@ -559,15 +586,20 @@ AngularFireAuth.prototype = {
                var claims = self._deconstructJWT(tokenOrProvider);
                self._fRef.auth(tokenOrProvider, function(err) {
                   if (err) {
+                     deferred.reject(err);
                      self._rootScope.$broadcast("$firebaseAuth:error", err);
                   } else {
+                     self._deferred = deferred;
                      self._loggedIn(claims);
                   }
                });
             } catch(e) {
+               deferred.reject(e);
                self._rootScope.$broadcast("$firebaseAuth:error", e);
             }
       }
+
+      return deferred.promise;
    },
 
    // Unauthenticate the Firebase reference.
@@ -580,6 +612,7 @@ AngularFireAuth.prototype = {
       }
    },
 
+   // Creates a user for Firebase Simple Login.
    // Function 'cb' receives an error as the first argument and a
    // Simple Login user object as the second argument. Pass noLogin=true
    // if you don't want the newly created user to also be logged in.
@@ -599,6 +632,24 @@ AngularFireAuth.prototype = {
          }
          if (cb) {
             self._timeout(function(){
+               cb(err, user);
+            });
+         }
+      });
+   },
+
+   // Changes the password for a Firebase Simple Login user.
+   // Take an email, old password and new password as three mandatory arguments.
+   // An optional callback may be specified to be notified when the password
+   // has been changed successfully.
+   changePassword: function(email, old, np, cb) {
+      var self = this;
+      self._authClient.changePassword(email, old, np, function(err, user) {
+         if (err) {
+            self._rootScope.$broadcast("$firebaseAuth:error", err);
+         }
+         if (cb) {
+            self._timeout(function() {
                cb(err, user);
             });
          }
