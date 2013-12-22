@@ -198,14 +198,14 @@ describe('service', function() {
          })
       );
 
-      it('should invoke the callback', function() {
+      it('should invoke the callback',
          inject(function(profileCreator, $timeout) {
             var cb = jasmine.createSpy();
             profileCreator(456, 'test2@test2.com', cb);
             flush($timeout);
             expect(cb).toHaveBeenCalled();
          })
-      });
+      );
 
       it('should return any error in the callback',
          inject(function(profileCreator, firebaseRef, $timeout) {
