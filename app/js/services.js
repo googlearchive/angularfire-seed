@@ -55,7 +55,12 @@
                      password: pass,
                      rememberMe: true
                   }).then(function(user) {
-                     callback && callback(null, user);
+                     if( callback ) {
+                        //todo-bug https://github.com/firebase/angularFire/issues/199
+                        setTimeout(function() {
+                           callback(null, user);
+                        });
+                     }
                   }, callback);
                },
 
