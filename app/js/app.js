@@ -31,15 +31,18 @@ angular.module('myApp',
       $routeProvider.otherwise({redirectTo: '/home'});
    }])
 
-   // double-check that the app has been configured
-   .run(['FBURL', function(FBURL) {
-      if( FBURL === 'https://INSTANCE.firebaseio.com' ) {
-         angular.element(document.body).html('<h1>Please configure app/js/config.js before running!</h1>');
-      }
-   }])
 
    // establish authentication
    .run(['loginService', '$rootScope', 'FBURL', function(loginService, $rootScope, FBURL) {
-      $rootScope.auth = loginService.init('/login');
-      $rootScope.FBURL = FBURL;
+      if( FBURL === 'https://INSTANCE.firebaseio.com' ) {
+         // double-check that the app has been configured
+         angular.element(document.body).html('<h1>Please configure app/js/config.js before running!</h1>');
+         setTimeout(function() {
+            angular.element(document.body).removeClass('hide');
+         }, 250);
+      }
+      else {
+         $rootScope.auth = loginService.init('/login');
+         $rootScope.FBURL = FBURL;
+      }
    }]);
