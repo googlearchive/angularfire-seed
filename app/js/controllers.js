@@ -29,7 +29,7 @@ angular.module('myApp.controllers', [])
       $scope.confirm = null;
       $scope.createMode = false;
 
-      $scope.login = function() {
+      $scope.login = function(cb) {
          $scope.err = null;
          if( !$scope.email ) {
             $scope.err = 'Please enter an email address';
@@ -43,6 +43,7 @@ angular.module('myApp.controllers', [])
                if( !err ) {
                   $location.replace();
                   $location.path('/account');
+                  cb && cb(user);
                }
             });
          }
@@ -65,10 +66,8 @@ angular.module('myApp.controllers', [])
                }
                else {
                   // must be logged in before I can write to my profile
-                  $scope.login(function(err) {
-                     if( !err ) {
-                        loginService.createProfile(user.uid, user.email);
-                     }
+                  $scope.login(function() {
+                     loginService.createProfile(user.uid, user.email);
                   });
                }
             });
