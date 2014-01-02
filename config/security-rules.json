@@ -23,7 +23,7 @@
       "users": {
          "$user": {
             ".read": "auth.uid === $user",
-            ".write": "auth.uid === $user",
+            ".write": "auth.uid === $user && (!newData.exists() || newData.hasChildren())",
             "name": {
                ".validate": "newData.isString() && newData.val().length <= 2000"
             },
