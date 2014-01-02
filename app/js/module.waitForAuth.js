@@ -14,7 +14,10 @@ angular.module('waitForAuth', [])
       subs.push($rootScope.$on('$firebaseAuth:login', fn));
       subs.push($rootScope.$on('$firebaseAuth:logout', fn));
       subs.push($rootScope.$on('$firebaseAuth:error', fn));
-      function fn() {
+      function fn(err) {
+         if( $rootScope.auth ) {
+            $rootScope.auth.error = err instanceof Error? err.toString() : null;
+         }
          for(var i=0; i < subs.length; i++) { subs[i](); }
          $timeout(function() {
             // force $scope.$apply to be re-run after login resolves
@@ -44,6 +47,9 @@ angular.module('waitForAuth', [])
  */
    .directive('ngShowAuth', function($rootScope) {
       var loginState;
+      $rootScope.$on("$firebaseAuth:login",  function() { loginState = 'login' });
+      $rootScope.$on("$firebaseAuth:logout", function() { loginState = 'logout' });
+      $rootScope.$on("$firebaseAuth:error",  function() { loginState = 'error' });
       return {
          restrict: 'A',
          compile: function(el, attr) {
@@ -52,7 +58,7 @@ angular.module('waitForAuth', [])
                loginState = newState;
                el.toggleClass('hide', loginState !== expState );
             }
-            fn(null);
+            fn(loginState);
             $rootScope.$on("$firebaseAuth:login",  function() { fn('login') });
             $rootScope.$on("$firebaseAuth:logout", function() { fn('logout') });
             $rootScope.$on("$firebaseAuth:error",  function() { fn('error') });

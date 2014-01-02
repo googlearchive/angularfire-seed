@@ -1,10 +1,10 @@
 <h2>Home</h2>
 
-<p class="status good" ng-show="auth" ng-cloak>You are logged in</p>
-<p class="status" ng-hide="auth" ng-cloak>You are not logged in</p>
+<p class="status good" ng-show-auth="login">Hello! You are logged in.</p>
+<p class="status" ng-show-auth="logout">Not logged in</p>
+<p class="status error" ng-show-auth="error">{{auth.error}}</p>
 
-<h4 ng-show="syncedValue">{{syncedValue}}</h4>
-<input ng-model="syncedValue" type="text" />
+<input ng-model="syncedValue" type="text" /> <b>{{syncedValue}}</b>
 
 <p>Open <a href="{{FBURL}}/syncedValue">Forge</a> or a <a target="_blank" href="index.html">new window</a> to see this input update in real time:</p>
 
