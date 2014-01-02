@@ -58,8 +58,8 @@
     <ul class="menu">
         <li><a href="#/home">home</a></li>
         <li><a href="#/chat">chat</a></li>
-        <li ng-hide="auth"><a href="#/login">login</a></li>
-        <li ng-show="auth"><a href="#/account">account</a></li>
+        <li ng-show-auth="logout"><a href="#/login">login</a></li>
+        <li ng-show-auth="login"><a href="#/account">account</a></li>
     </ul>
 
 
