@@ -57,7 +57,7 @@
                   }).then(function(user) {
                      if( callback ) {
                         //todo-bug https://github.com/firebase/angularFire/issues/199
-                        setTimeout(function() {
+                        $timeout(function() {
                            callback(null, user);
                         });
                      }

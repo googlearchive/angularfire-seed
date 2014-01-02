@@ -29,6 +29,11 @@ angular.module('myApp.controllers', [])
       $scope.confirm = null;
       $scope.createMode = false;
 
+      $scope.$on('$firebaseAuth:login', function() {
+         $location.replace();
+         $location.path('/account');
+      });
+
       $scope.login = function(cb) {
          $scope.err = null;
          if( !$scope.email ) {
@@ -41,8 +46,6 @@ angular.module('myApp.controllers', [])
             loginService.login($scope.email, $scope.pass, function(err, user) {
                $scope.err = err? err + '' : null;
                if( !err ) {
-                  $location.replace();
-                  $location.path('/account');
                   cb && cb(user);
                }
             });
