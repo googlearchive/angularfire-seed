@@ -10,51 +10,60 @@ describe('service', function() {
          // mock dependencies used by our services to isolate testing
          $provide.value('Firebase', firebaseStub());
          $provide.value('$location', stub('path'));
-         $provide.value('$firebaseAuth', angularAuthStub());
+         $provide.value('$firebaseSimpleLogin', angularAuthStub());
          $provide.value('firebaseRef', firebaseStub());
       }));
 
       describe('#login', function() {
-         it('should return error if $firebaseAuth.$login fails',
-            inject(function($q, $rootScope, loginService, $firebaseAuth) {
+         it('should return error if $firebaseSimpleLogin.$login fails',
+            inject(function($q, $timeout, loginService, $firebaseSimpleLogin) {
                var cb = jasmine.createSpy();
                loginService.init('/login');
-               $firebaseAuth.fns.$login.andReturn(reject($q, 'test_error'));
+               $firebaseSimpleLogin.fns.$login.andReturn(reject($q, 'test_error'));
                loginService.login('test@test.com', '123', cb);
-               $rootScope.$apply();
+               flush($timeout);
                expect(cb).toHaveBeenCalledWith('test_error');
             })
          );
 
-         it('should return user if $firebaseAuth.$login succeeds',
-            inject(function(loginService, $firebaseAuth, $rootScope, $q) {
+         it('should return user if $firebaseSimpleLogin.$login succeeds',
+            inject(function(loginService, $firebaseSimpleLogin, $q, $timeout) {
                var cb = jasmine.createSpy();
-               loginService.init('/login');
-               $firebaseAuth.fns.$login.andReturn(resolve($q, {hello: 'world'}));
-               loginService.login('test@test.com', '123', cb);
-               $rootScope.$apply();
-               expect(cb).toHaveBeenCalledWith(null, {hello: 'world'});
+               runs(function() {
+                  loginService.init();
+                  $firebaseSimpleLogin.fns.$login.andReturn(resolve($q, {hello: 'world'}));
+                  loginService.login('test@test.com', '123', cb);
+                  flush($timeout);
+               });
+
+               waitsFor(function() {
+                  return cb.callCount > 0;
+               });
+
+               runs(function() {
+                  expect(cb).toHaveBeenCalledWith(null, {hello: 'world'});
+               });
             })
          );
       });
 
       describe('#logout', function() {
-         it('should invoke $firebaseAuth.$logout()', function() {
-            inject(function(loginService, $firebaseAuth) {
+         it('should invoke $firebaseSimpleLogin.$logout()', function() {
+            inject(function(loginService, $firebaseSimpleLogin) {
                loginService.init('/login');
                loginService.logout();
-               expect($firebaseAuth.fns.$logout).toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$logout).toHaveBeenCalled();
             });
          });
       });
 
       describe('#changePassword', function() {
-         beforeEach(inject(function($timeout, $firebaseAuth) {
-            customSpy($firebaseAuth.fns, '$changePassword', function(eml, op, np, cb) { $timeout(function() { cb(null); }) });
+         beforeEach(inject(function($timeout, $firebaseSimpleLogin) {
+            customSpy($firebaseSimpleLogin.fns, '$changePassword', function(eml, op, np, cb) { $timeout(function() { cb(null); }) });
          }));
 
          it('should fail if old password is missing',
-            inject(function(loginService, $firebaseAuth, $timeout) {
+            inject(function(loginService, $firebaseSimpleLogin, $timeout) {
                var cb = jasmine.createSpy();
                loginService.init('/login');
                loginService.changePassword({
@@ -64,12 +73,12 @@ describe('service', function() {
                });
                flush($timeout);
                expect(cb).toHaveBeenCalledWith('Please enter a password');
-               expect($firebaseAuth.fns.$changePassword).not.toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
             })
          );
 
          it('should fail if new password is missing',
-            inject(function(loginService, $firebaseAuth, $timeout) {
+            inject(function(loginService, $firebaseSimpleLogin, $timeout) {
                var cb = jasmine.createSpy();
                loginService.init('/login');
                loginService.changePassword({
@@ -79,12 +88,12 @@ describe('service', function() {
                });
                flush($timeout);
                expect(cb).toHaveBeenCalledWith('Please enter a password');
-               expect($firebaseAuth.fns.$changePassword).not.toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
             })
          );
 
          it('should fail if passwords don\'t match',
-            inject(function(loginService, $firebaseAuth, $timeout) {
+            inject(function(loginService, $firebaseSimpleLogin, $timeout) {
                var cb = jasmine.createSpy();
                loginService.init('/login');
                loginService.changePassword({
@@ -95,14 +104,14 @@ describe('service', function() {
                });
                flush($timeout);
                expect(cb).toHaveBeenCalledWith('Passwords do not match');
-               expect($firebaseAuth.fns.$changePassword).not.toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
             })
          );
 
-         it('should fail if $firebaseAuth fails',
-            inject(function(loginService, $firebaseAuth, $timeout) {
+         it('should fail if $firebaseSimpleLogin fails',
+            inject(function(loginService, $firebaseSimpleLogin, $timeout) {
                var cb = jasmine.createSpy();
-               customSpy($firebaseAuth.fns, '$changePassword', function(email, op, np, cb) {
+               customSpy($firebaseSimpleLogin.fns, '$changePassword', function(email, op, np, cb) {
                   cb(new ErrorWithCode(123, 'errr'));
                });
                loginService.init('/login');
@@ -114,12 +123,12 @@ describe('service', function() {
                });
                flush($timeout);
                expect(cb.argsForCall[0][0].toString()).toBe('errr');
-               expect($firebaseAuth.fns.$changePassword).toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$changePassword).toHaveBeenCalled();
             })
          );
 
-         it('should return null if $firebaseAuth succeeds',
-            inject(function(loginService, $firebaseAuth, $timeout) {
+         it('should return null if $firebaseSimpleLogin succeeds',
+            inject(function(loginService, $firebaseSimpleLogin, $timeout) {
                var cb = jasmine.createSpy();
                loginService.init('/login');
                loginService.changePassword({
@@ -130,31 +139,31 @@ describe('service', function() {
                });
                flush($timeout);
                expect(cb).toHaveBeenCalledWith(null);
-               expect($firebaseAuth.fns.$changePassword).toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$changePassword).toHaveBeenCalled();
             })
          );
       });
 
       describe('#createAccount', function() {
-         beforeEach(inject(function($timeout, $firebaseAuth) {
-            customSpy($firebaseAuth.fns, '$createUser', function(eml, pass, cb) { $timeout(function() { cb(null); }) });
+         beforeEach(inject(function($timeout, $firebaseSimpleLogin) {
+            customSpy($firebaseSimpleLogin.fns, '$createUser', function(eml, pass, cb) { $timeout(function() { cb(null); }) });
          }));
 
-         it('should invoke $firebaseAuth',
-            inject(function(loginService, $firebaseAuth) {
+         it('should invoke $firebaseSimpleLogin',
+            inject(function(loginService, $firebaseSimpleLogin) {
                loginService.init('/login');
                loginService.createAccount('test@test.com', 123);
-               expect($firebaseAuth.fns.$createUser).toHaveBeenCalled();
+               expect($firebaseSimpleLogin.fns.$createUser).toHaveBeenCalled();
             })
          );
 
          it('should invoke callback if error',
-            inject(function(loginService, $timeout, $firebaseAuth) {
+            inject(function(loginService, $timeout, $firebaseSimpleLogin) {
                var cb = jasmine.createSpy(), undefined;
-               customSpy($firebaseAuth.fns, '$createUser', function(email, pass, cb) {
+               customSpy($firebaseSimpleLogin.fns, '$createUser', function(email, pass, cb) {
                   cb('joy!');
                });
-               loginService.init('/login');
+               loginService.init();
                loginService.createAccount('test@test.com', 123, cb);
                flush($timeout);
                expect(cb).toHaveBeenCalledWith('joy!');
@@ -164,7 +173,7 @@ describe('service', function() {
          it('should invoke callback if success',
             inject(function(loginService, $timeout) {
                var cb = jasmine.createSpy();
-               loginService.init('/login');
+               loginService.init();
                loginService.createAccount('test@test.com', 123, cb);
                flush($timeout);
                expect(cb).toHaveBeenCalledWith(null);
@@ -186,7 +195,7 @@ describe('service', function() {
          // mock dependencies used by our services to isolate testing
          $provide.value('Firebase', firebaseStub());
          $provide.value('$location', stub('path'));
-         $provide.value('$firebaseAuth', angularAuthStub());
+         $provide.value('$firebaseSimpleLogin', angularAuthStub());
          $provide.value('firebaseRef', firebaseStub());
       }));
 

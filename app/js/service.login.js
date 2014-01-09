@@ -5,7 +5,7 @@ angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
       function($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
          var auth = null;
          return {
-            init: function(path) {
+            init: function() {
                return auth = $firebaseSimpleLogin(firebaseRef());
             },
 
@@ -86,7 +86,3 @@ angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
          }
       }
    }]);
-
-function errMsg(err) {
-   return err? typeof(err) === 'object'? '['+err.code+'] ' + err.toString() : err+'' : null;
-}

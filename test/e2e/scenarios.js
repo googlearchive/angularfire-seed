@@ -6,7 +6,7 @@ angular.scenario.dsl('angularFireLogout', function() {
    return function() {
       this.addFutureAction('Logging out', function($window, $document, done) {
          var fbRef = $document.injector().get('firebaseRef');
-         var $firebaseAuth = $document.injector().get('$firebaseAuth');
+         var $firebaseAuth = $document.injector().get('$firebaseSimpleLogin');
          $firebaseAuth(fbRef()).$logout();
          done(null, true);
       });
@@ -16,7 +16,10 @@ angular.scenario.dsl('angularFireLogout', function() {
 describe('my app', function() {
 
   beforeEach(function() {
-    browser().navigateTo('../../app/index.html');
+     browser().navigateTo('../../app/index.html');
+//     this.addFutureAction('authenticate', function($window, $document, done) {
+//        $document.injector().get('waitForAuth').then(done);
+//     });
   });
 
 

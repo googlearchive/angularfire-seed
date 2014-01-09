@@ -3,17 +3,14 @@ module.exports = function(config){
       basePath : '../',
 
       files : [
-         'app/lib/angular/angular.js',
-         'app/lib/angular/angular-*.js',
+         'test/lib/angular/angular.js',
+         'test/lib/angular/angular-route.js',
+         'test/lib/firebase/firebase-debug.js',
+         'test/lib/firebase/firebase-simple-login.js',
+         'test/lib/firebase/angularfire.js',
          'test/lib/angular/angular-mocks.js',
          'app/js/**/*.js',
          'test/unit/**/*.js'
-      ],
-
-      exclude : [
-         'app/lib/angular/angular-loader.js',
-         'app/lib/angular/*.min.js',
-         'app/lib/angular/angular-scenario.js'
       ],
 
       autoWatch : true,
