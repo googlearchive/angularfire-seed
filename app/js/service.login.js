@@ -1,12 +1,12 @@
 
 angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
 
-   .factory('loginService', ['$rootScope', '$firebaseAuth', 'firebaseRef', 'profileCreator', '$timeout',
-      function($rootScope, $firebaseAuth, firebaseRef, profileCreator, $timeout) {
+   .factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
+      function($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
          var auth = null;
          return {
             init: function(path) {
-               return auth = $firebaseAuth(firebaseRef(), {path: path});
+               return auth = $firebaseSimpleLogin(firebaseRef());
             },
 
             /**

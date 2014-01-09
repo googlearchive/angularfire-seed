@@ -6,14 +6,14 @@
 angular.module('waitForAuth', [])
 
 /**
- * A service that returns a promise object, which is resolved once $firebaseAuth
+ * A service that returns a promise object, which is resolved once $firebaseSimpleLogin
  * is initialized (i.e. it returns login, logout, or error)
  */
    .service('waitForAuth', function($rootScope, $q, $timeout) {
       var def = $q.defer(), subs = [];
-      subs.push($rootScope.$on('$firebaseAuth:login', fn));
-      subs.push($rootScope.$on('$firebaseAuth:logout', fn));
-      subs.push($rootScope.$on('$firebaseAuth:error', fn));
+      subs.push($rootScope.$on('$firebaseSimpleLogin:login', fn));
+      subs.push($rootScope.$on('$firebaseSimpleLogin:logout', fn));
+      subs.push($rootScope.$on('$firebaseSimpleLogin:error', fn));
       function fn(err) {
          if( $rootScope.auth ) {
             $rootScope.auth.error = err instanceof Error? err.toString() : null;
@@ -47,21 +47,46 @@ angular.module('waitForAuth', [])
  */
    .directive('ngShowAuth', function($rootScope) {
       var loginState;
-      $rootScope.$on("$firebaseAuth:login",  function() { loginState = 'login' });
-      $rootScope.$on("$firebaseAuth:logout", function() { loginState = 'logout' });
-      $rootScope.$on("$firebaseAuth:error",  function() { loginState = 'error' });
+      $rootScope.$on("$firebaseSimpleLogin:login",  function() { loginState = 'login' });
+      $rootScope.$on("$firebaseSimpleLogin:logout", function() { loginState = 'logout' });
+      $rootScope.$on("$firebaseSimpleLogin:error",  function() { loginState = 'error' });
+      function inList(needle, list) {
+         var res = false;
+         angular.forEach(list, function(x) {
+            if( x === needle ) {
+               res = true;
+               return true;
+            }
+            return false;
+         });
+         return res;
+      }
+      function assertValidState(state) {
+         if( !state ) {
+            throw new Error('ng-show-auth directive must be login, logout, or error (you may use a comma-separated list)');
+         }
+         var states = (state||'').split(',');
+         angular.forEach(states, function(s) {
+            if( !inList(s, ['login', 'logout', 'error']) ) {
+               throw new Error('Invalid state "'+s+'" for ng-show-auth directive, must be one of login, logout, or error');
+            }
+         });
+         return true;
+      }
       return {
          restrict: 'A',
          compile: function(el, attr) {
-            var expState = attr.ngShowAuth;
+            assertValidState(attr.ngShowAuth);
+            var expState = (attr.ngShowAuth||'').split(',');
             function fn(newState) {
                loginState = newState;
-               el.toggleClass('hide', loginState !== expState );
+               var hide = !inList(newState, expState);
+               el.toggleClass('hide', hide );
             }
             fn(loginState);
-            $rootScope.$on("$firebaseAuth:login",  function() { fn('login') });
-            $rootScope.$on("$firebaseAuth:logout", function() { fn('logout') });
-            $rootScope.$on("$firebaseAuth:error",  function() { fn('error') });
+            $rootScope.$on("$firebaseSimpleLogin:login",  function() { fn('login') });
+            $rootScope.$on("$firebaseSimpleLogin:logout", function() { fn('logout') });
+            $rootScope.$on("$firebaseSimpleLogin:error",  function() { fn('error') });
          }
       }
    });

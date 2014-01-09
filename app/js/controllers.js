@@ -29,11 +29,6 @@ angular.module('myApp.controllers', [])
       $scope.confirm = null;
       $scope.createMode = false;
 
-      $scope.$on('$firebaseAuth:login', function() {
-         $location.replace();
-         $location.path('/account');
-      });
-
       $scope.login = function(cb) {
          $scope.err = null;
          if( !$scope.email ) {
@@ -53,6 +48,24 @@ angular.module('myApp.controllers', [])
       };
 
       $scope.createAccount = function() {
+         $scope.err = null;
+         if( assertValidLoginAttempt() ) {
+            loginService.createAccount($scope.email, $scope.pass, function(err, user) {
+               if( err ) {
+                  $scope.err = err? err + '' : null;
+               }
+               else {
+                  // must be logged in before I can write to my profile
+                  $scope.login(function() {
+                     loginService.createProfile(user.uid, user.email);
+                     $location.path('/account');
+                  });
+               }
+            });
+         }
+      };
+
+      function assertValidLoginAttempt() {
          if( !$scope.email ) {
             $scope.err = 'Please enter an email address';
          }
@@ -62,20 +75,8 @@ angular.module('myApp.controllers', [])
          else if( $scope.pass !== $scope.confirm ) {
             $scope.err = 'Passwords do not match';
          }
-         else {
-            loginService.createAccount($scope.email, $scope.pass, function(err, user) {
-               if( err ) {
-                  $scope.err = err? err + '' : null;
-               }
-               else {
-                  // must be logged in before I can write to my profile
-                  $scope.login(function() {
-                     loginService.createProfile(user.uid, user.email);
-                  });
-               }
-            });
-         }
-      };
+         return !$scope.err;
+      }
    }])
 
    .controller('AccountCtrl', ['$scope', 'loginService', 'syncData', '$location', function($scope, loginService, syncData, $location) {
@@ -83,7 +84,6 @@ angular.module('myApp.controllers', [])
 
       $scope.logout = function() {
          loginService.logout();
-         $location.path('/login');
       };
 
       $scope.oldpass = null;
