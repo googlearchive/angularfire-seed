@@ -58,8 +58,13 @@ describe('service', function() {
       });
 
       describe('#changePassword', function() {
-         beforeEach(inject(function($timeout, $firebaseSimpleLogin) {
-            customSpy($firebaseSimpleLogin.fns, '$changePassword', function(eml, op, np, cb) { $timeout(function() { cb(null); }) });
+         beforeEach(inject(function($timeout, $firebaseSimpleLogin, $q) {
+            customSpy($firebaseSimpleLogin.fns, '$changePassword',
+               function(eml, op, np, cb) {
+                  var def = $q.defer();
+                  $timeout(function() { def.resolve(); });
+                  return def.promise;
+               });
          }));
 
          it('should fail if old password is missing',
@@ -109,10 +114,12 @@ describe('service', function() {
          );
 
          it('should fail if $firebaseSimpleLogin fails',
-            inject(function(loginService, $firebaseSimpleLogin, $timeout) {
+            inject(function(loginService, $firebaseSimpleLogin, $timeout, $q) {
                var cb = jasmine.createSpy();
-               customSpy($firebaseSimpleLogin.fns, '$changePassword', function(email, op, np, cb) {
-                  cb(new ErrorWithCode(123, 'errr'));
+               customSpy($firebaseSimpleLogin.fns, '$changePassword', function(email, op, np) {
+                  var def = $q.defer();
+                  $timeout(function() { def.reject(new ErrorWithCode(123, 'errr')); });
+                  return def.promise;
                });
                loginService.init('/login');
                loginService.changePassword({
@@ -145,8 +152,12 @@ describe('service', function() {
       });
 
       describe('#createAccount', function() {
-         beforeEach(inject(function($timeout, $firebaseSimpleLogin) {
-            customSpy($firebaseSimpleLogin.fns, '$createUser', function(eml, pass, cb) { $timeout(function() { cb(null); }) });
+         beforeEach(inject(function($timeout, $firebaseSimpleLogin, $q) {
+            customSpy($firebaseSimpleLogin.fns, '$createUser', function(eml, pass) {
+               var def = $q.defer();
+               $timeout(function() { def.resolve({name: 'kato'}); });
+               return def.promise;
+            });
          }));
 
          it('should invoke $firebaseSimpleLogin',
@@ -158,10 +169,12 @@ describe('service', function() {
          );
 
          it('should invoke callback if error',
-            inject(function(loginService, $timeout, $firebaseSimpleLogin) {
+            inject(function(loginService, $timeout, $firebaseSimpleLogin, $q) {
                var cb = jasmine.createSpy(), undefined;
-               customSpy($firebaseSimpleLogin.fns, '$createUser', function(email, pass, cb) {
-                  cb('joy!');
+               customSpy($firebaseSimpleLogin.fns, '$createUser', function(email, pass) {
+                  var def = $q.defer();
+                  def.reject('joy!');
+                  return def.promise;
                });
                loginService.init();
                loginService.createAccount('test@test.com', 123, cb);
@@ -176,7 +189,7 @@ describe('service', function() {
                loginService.init();
                loginService.createAccount('test@test.com', 123, cb);
                flush($timeout);
-               expect(cb).toHaveBeenCalledWith(null);
+               expect(cb).toHaveBeenCalledWith(null, {name: 'kato'});
             })
          )
       });

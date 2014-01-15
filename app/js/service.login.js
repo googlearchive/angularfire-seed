@@ -46,13 +46,13 @@ angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
                   $timeout(function() { cb('Passwords do not match'); });
                }
                else {
-                  auth.$changePassword(opts.email, opts.oldpass, opts.newpass, cb);
+                  auth.$changePassword(opts.email, opts.oldpass, opts.newpass).then(function() { cb && cb(null) }, cb);
                }
             },
 
             createAccount: function(email, pass, callback) {
                assertAuth();
-               auth.$createUser(email, pass, callback);
+               auth.$createUser(email, pass).then(function(user) { callback && callback(null, user) }, callback);
             },
 
             createProfile: profileCreator

@@ -29,7 +29,7 @@
 
          self._rootScope.$on('$firebaseSimpleLogin:login', angular.bind(this, this._login));
          self._rootScope.$on('$firebaseSimpleLogin:logout', angular.bind(this, this._logout));
-         self._rootScope.$on('$firebaseSimpleLogin:error', angular.bind(this, this._logout));
+         self._rootScope.$on('$firebaseSimpleLogin:error', angular.bind(this, this._error));
       },
 
       _checkCurrent: function() {
@@ -53,6 +53,13 @@
 
       _logout: function() {
          this._authenticated = false;
+         this._checkCurrent();
+      },
+
+      _error: function() {
+         if( !this._rootScope.auth || !this._rootScope.auth.user ) {
+            this._authenticated = false;
+         }
          this._checkCurrent();
       },
 
