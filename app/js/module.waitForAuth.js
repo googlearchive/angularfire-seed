@@ -75,9 +75,11 @@ angular.module('waitForAuth', [])
       }
       return {
          restrict: 'A',
-         compile: function(el, attr) {
-            assertValidState(attr.ngShowAuth);
-            var expState = (attr.ngShowAuth||'').split(',');
+         link: function(scope, el, attr) {
+            var showAuth = scope.$eval(attr.ngShowAuth);
+            if (showAuth == null) { showAuth = attr.ngShowAuth; }
+            assertValidState(showAuth);
+            var expState = (showAuth||'').split(',');
             function fn(newState) {
                loginState = newState;
                var hide = !inList(newState, expState);
