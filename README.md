@@ -1,5 +1,5 @@
 
-# angular-seed — the seed for AngularFire apps
+# angularFire-seed — the seed for AngularFire apps
 
 This project is an application skeleton for a typical [AngularFire](http://angularfire.com/) web app.
 This library allows you to quickly bootstrap real-time apps using [Firebase](http://www.firebase.com) and [AngularJS](http://www.angularjs.org).
