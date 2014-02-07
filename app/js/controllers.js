@@ -79,7 +79,7 @@ angular.module('myApp.controllers', [])
       }
    }])
 
-   .controller('AccountCtrl', ['$scope', 'loginService', 'syncData', '$location', 'FBURL', function($scope, loginService, syncData, $location, FBURL) {
+   .controller('AccountCtrl', ['$scope', 'loginService', 'changeEmailService', 'firebaseRef', 'syncData', '$location', 'FBURL', function($scope, loginService, changeEmailService, firebaseRef, syncData, $location, FBURL) {
       syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
 
       $scope.logout = function() {
@@ -104,7 +104,11 @@ angular.module('myApp.controllers', [])
 
       $scope.updateEmail = function() {
         $scope.reset();
-        loginService.changeEmail(buildEmailParms());
+        // disable bind to prevent junk data being left in firebase
+        $scope.user.$off(null,function(){
+         console.log('off');
+         changeEmailService(buildEmailParms());
+      });
       };
 
       function buildPwdParms() {
@@ -124,22 +128,18 @@ angular.module('myApp.controllers', [])
                   $scope.msg = 'Password updated!';
                }
             }
-         }
+         };
       }
       function buildEmailParms() {
          return {
             newEmail: $scope.newemail,
             pass: $scope.pass,
-            userRef: FBURL + '/users',
             callback: function(err) {
                if( err ) {
                   $scope.emailerr = err;
                }
                else {
-                  // update email displayed in profile
-                  $scope.user.$off();
-                  syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
-                  // reset form
+                  $scope.user.email = $scope.newemail;
                   $scope.newemail = null;
                   $scope.pass = null;
                   $scope.emailmsg = 'Email updated!';
