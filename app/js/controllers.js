@@ -105,10 +105,8 @@ angular.module('myApp.controllers', [])
       $scope.updateEmail = function() {
         $scope.reset();
         // disable bind to prevent junk data being left in firebase
-        $scope.user.$off(null,function(){
-         console.log('off');
-         changeEmailService(buildEmailParms());
-      });
+        $scope.user.$off();
+        changeEmailService(buildEmailParms());
       };
 
       function buildPwdParms() {
