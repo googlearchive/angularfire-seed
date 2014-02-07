@@ -39,6 +39,25 @@
         <p class="error" ng-show="err">{{err}}</p>
         <p class="good" ng-show="msg">{{msg}}</p>
     </fieldset>
+
+    <fieldset>
+        <legend>Change Email</legend>
+
+        <label>
+            <span>New Email:</span>
+            <input type="text" ng-keypress="reset()" ng-model="newemail"/>
+        </label>
+
+        <label>
+            <span>Password:</span>
+            <input type="password" ng-keypress="reset()" ng-model="pass"/>
+        </label>
+
+        <button ng-click="updateEmail()">update password</button>
+
+        <p class="error" ng-show="emailerr">{{emailerr}}</p>
+        <p class="good" ng-show="emailmsg">{{emailmsg}}</p>
+    </fieldset>
 </form>
 
 <button ng-click="logout()">Log Out</button>

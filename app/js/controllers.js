@@ -79,7 +79,7 @@ angular.module('myApp.controllers', [])
       }
    }])
 
-   .controller('AccountCtrl', ['$scope', 'loginService', 'syncData', '$location', function($scope, loginService, syncData, $location) {
+   .controller('AccountCtrl', ['$scope', 'loginService', 'syncData', '$location', 'FBURL', function($scope, loginService, syncData, $location, FBURL) {
       syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
 
       $scope.logout = function() {
@@ -93,11 +93,18 @@ angular.module('myApp.controllers', [])
       $scope.reset = function() {
          $scope.err = null;
          $scope.msg = null;
+         $scope.emailerr = null;
+         $scope.emailmsg = null;
       };
 
       $scope.updatePassword = function() {
          $scope.reset();
          loginService.changePassword(buildPwdParms());
+      };
+
+      $scope.updateEmail = function() {
+        $scope.reset();
+        loginService.changeEmail(buildEmailParms());
       };
 
       function buildPwdParms() {
@@ -118,6 +125,27 @@ angular.module('myApp.controllers', [])
                }
             }
          }
+      }
+      function buildEmailParms() {
+         return {
+            newEmail: $scope.newemail,
+            pass: $scope.pass,
+            userRef: FBURL + '/users',
+            callback: function(err) {
+               if( err ) {
+                  $scope.emailerr = err;
+               }
+               else {
+                  // update email displayed in profile
+                  $scope.user.$off();
+                  syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
+                  // reset form
+                  $scope.newemail = null;
+                  $scope.pass = null;
+                  $scope.emailmsg = 'Email updated!';
+               }
+            }
+         };
       }
 
    }]);
