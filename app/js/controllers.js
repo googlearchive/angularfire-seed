@@ -80,7 +80,14 @@ angular.module('myApp.controllers', [])
    }])
 
    .controller('AccountCtrl', ['$scope', 'loginService', 'changeEmailService', 'firebaseRef', 'syncData', '$location', 'FBURL', function($scope, loginService, changeEmailService, firebaseRef, syncData, $location, FBURL) {
-      syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user');
+      $scope.syncAccount = function() {
+         $scope.user = {};
+         syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user').then(function(unBind) {
+            $scope.unBindAccount = unBind;
+         });
+      };
+      // set initial binding
+      $scope.syncAccount();
 
       $scope.logout = function() {
          loginService.logout();
@@ -105,7 +112,7 @@ angular.module('myApp.controllers', [])
       $scope.updateEmail = function() {
         $scope.reset();
         // disable bind to prevent junk data being left in firebase
-        $scope.user.$off();
+        $scope.unBindAccount();
         changeEmailService(buildEmailParms());
       };
 
@@ -135,9 +142,12 @@ angular.module('myApp.controllers', [])
             callback: function(err) {
                if( err ) {
                   $scope.emailerr = err;
+                  // reinstate binding
+                  $scope.syncAccount();
                }
                else {
-                  $scope.user.email = $scope.newemail;
+                  // reinstate binding
+                  $scope.syncAccount();
                   $scope.newemail = null;
                   $scope.pass = null;
                   $scope.emailmsg = 'Email updated!';
