@@ -1,8 +1,8 @@
 
 angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
 
-   .factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout', '$q',
-      function($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout, $q) {
+   .factory('loginService', ['$rootScope', '$firebaseSimpleLogin', 'firebaseRef', 'profileCreator', '$timeout',
+      function($rootScope, $firebaseSimpleLogin, firebaseRef, profileCreator, $timeout) {
          var auth = null;
          return {
             init: function() {
@@ -23,10 +23,7 @@ angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
                   rememberMe: true
                }).then(function(user) {
                      if( callback ) {
-                        //todo-bug https://github.com/firebase/angularFire/issues/199
-                        $timeout(function() {
-                           callback(null, user);
-                        });
+                        callback(null, user);
                      }
                   }, callback);
             },
