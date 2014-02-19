@@ -64,3 +64,7 @@ fieldset {
    margin-right: 25px;
    padding: 25px;
 }
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}
