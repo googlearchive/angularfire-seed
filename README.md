@@ -149,3 +149,7 @@ fetch the changes and merge them into your project with git.
 More information on AngularFire: http://angularfire.com
 More information on Firebase: http://firebase.com
 More information on AngularJS: http://angularjs.org/
+
+## LICENCE
+
+[MIT](http://firebase.mit-license.org/)
