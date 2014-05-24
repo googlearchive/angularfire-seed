@@ -9,8 +9,8 @@ instant web development gratification. Just clone the repo (or download the zip/
 our (or yours) webserver and you are ready to develop and test your application.
 
 The seed app doesn't do much, just shows how to wire controllers and views together and persist them
-in Firebase. You can check it out by opening app/index.html in your browser (might not work
-file `file://` scheme in certain browsers, see note below).
+in Firebase. You can check it out by opening app/index.html in your browser (it might not work
+with `file://` scheme in certain browsers, see note below).
 
 _Note: While angular, angularFire, and Firebase can be used client-side-only, and it's possible to create
 apps that don't require a backend server at all, we recommend hosting the project files using a local
