@@ -49,7 +49,12 @@ angular.module('myApp.service.login', ['firebase', 'myApp.service.firebase'])
 
             createAccount: function(email, pass, callback) {
                assertAuth();
-               auth.$createUser(email, pass).then(function(user) { callback && callback(null, user) }, callback);
+               auth.$createUser(email, pass)
+                 .then(function(user) { 
+                     if( callback ){
+                        callback(null, user);  
+                     }
+                  }, callback);
             },
 
             createProfile: profileCreator
