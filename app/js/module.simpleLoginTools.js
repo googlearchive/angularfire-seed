@@ -17,6 +17,18 @@
  */
 angular.module('simpleLoginTools', [])
 
+/**
+  * A service that returns a promise object, which is resolved once $firebaseSimpleLogin
+  * is initialized.
+  *
+  * <code>
+  *    function(waitForAuth) {
+  *        waitForAuth.then(function() {
+  *            console.log('auth initialized');
+  *        });
+  *    }
+  * </code>
+  */
   .service('waitForAuth', ['$rootScope','$q','$timeout',function($rootScope, $q, $timeout) {
     function fn(err) {
       if($rootScope.auth) {
