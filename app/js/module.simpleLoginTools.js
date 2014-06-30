@@ -18,18 +18,18 @@
 angular.module('simpleLoginTools', [])
 
 /**
- * A service that returns a promise object, which is resolved once $firebaseSimpleLogin
- * is initialized.
- *
- * <code>
- *    function(waitForAuth) {
- *        waitForAuth.then(function() {
- *            console.log('auth initialized');
- *        });
- *    }
- * </code>
- */
-  .service('waitForAuth', function($rootScope, $q, $timeout) {
+  * A service that returns a promise object, which is resolved once $firebaseSimpleLogin
+  * is initialized.
+  *
+  * <code>
+  *    function(waitForAuth) {
+  *        waitForAuth.then(function() {
+  *            console.log('auth initialized');
+  *        });
+  *    }
+  * </code>
+  */
+  .service('waitForAuth', ['$rootScope','$q','$timeout',function($rootScope, $q, $timeout) {
     function fn(err) {
       if($rootScope.auth) {
         $rootScope.auth.error = err instanceof Error? err.toString() : null;
@@ -46,7 +46,7 @@ angular.module('simpleLoginTools', [])
     subs.push($rootScope.$on('$firebaseSimpleLogin:logout', fn));
     subs.push($rootScope.$on('$firebaseSimpleLogin:error', fn));
     return def.promise;
-  })
+  }])
 
 /**
  * A directive that wraps ng-cloak so that, instead of simply waiting for Angular to compile, it waits until
@@ -56,22 +56,23 @@ angular.module('simpleLoginTools', [])
  *    <div ng-cloak>Authentication has resolved.</div>
  * </code>
  */
-  .config(function($provide) {
+  .config(['$provide', function($provide) {
     // adapt ng-cloak to wait for auth before it does its magic
-    $provide.decorator('ngCloakDirective', function($delegate, waitForAuth) {
-      var directive = $delegate[0];
-      // make a copy of the old directive
-      var _compile = directive.compile;
-      directive.compile = function(element, attr) {
-        waitForAuth.then(function() {
-          // after auth, run the original ng-cloak directive
-          _compile.call(directive, element, attr);
-        });
-      };
-      // return the modified directive
-      return $delegate;
-    });
-  })
+    $provide.decorator('ngCloakDirective', ['$delegate', 'waitForAuth', 
+      function($delegate, waitForAuth) {
+        var directive = $delegate[0];
+        // make a copy of the old directive
+        var _compile = directive.compile;
+        directive.compile = function(element, attr) {
+          waitForAuth.then(function() {
+            // after auth, run the original ng-cloak directive
+            _compile.call(directive, element, attr);
+          });
+        };
+        // return the modified directive
+        return $delegate;
+      }]);
+  }])
 
 /**
  * A directive that shows elements only when the given authentication state is in effect
@@ -83,7 +84,7 @@ angular.module('simpleLoginTools', [])
  *    <div ng-show-auth="logout,error">This appears for logout or for error condition!</div>
  * </code>
  */
-  .directive('ngShowAuth', function ($rootScope) {
+  .directive('ngShowAuth', ['$rootScope', function ($rootScope) {
     var loginState = 'logout';
     $rootScope.$on('$firebaseSimpleLogin:login',  function() { loginState = 'login'; });
     $rootScope.$on('$firebaseSimpleLogin:logout', function() { loginState = 'logout'; });
@@ -143,4 +144,4 @@ angular.module('simpleLoginTools', [])
         $rootScope.$on('$firebaseSimpleLogin:error',  fn);
       }
     };
-  });
+  }]);
