@@ -23,7 +23,7 @@ etc to function properly when an html page is opened via `file://` scheme instea
 
  1. Clone the angularFire-seed repository
  1. Open app/js/config.js and add your Firebase URL
- 1. Go to your Firebase URL and enable email/password authentication under the Auth tab
+ 1. Go to your Firebase URL and enable email/password authentication under the Simple Login tab
  1. Start hacking...
 
 ### Serving pages during development
