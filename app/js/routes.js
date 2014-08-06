@@ -8,9 +8,9 @@ angular.module('myApp.routes', ['ngRoute', 'simpleLogin'])
       controller: 'HomeCtrl',
       resolve: {
         // forces the page to wait for this promise to resolve before controller is loaded
-        // the controller can then inject `user` as a dependency. These can also be resolved
+        // the controller can then inject `user` as a dependency. This could also be done
         // in the controller, but this makes things cleaner (controller doesn't need to worry
-        // about auth and timing of displaying its UI components)
+        // about auth status or timing of displaying its UI components)
         user: ['simpleLogin', function(simpleLogin) {
           return simpleLogin.getUser();
         }]
@@ -27,7 +27,7 @@ angular.module('myApp.routes', ['ngRoute', 'simpleLogin'])
     '/account': {
       templateUrl: 'partials/account.html',
       controller: 'AccountCtrl',
-      // require use to be logged in to view this route
+      // require user to be logged in to view this route
       // the whenAuthenticated method below will resolve the current user
       // before this controller loads and redirect if necessary
       authRequired: true

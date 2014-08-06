@@ -13,7 +13,6 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
 
   .factory('simpleLogin', ['$firebaseSimpleLogin', 'fbutil', 'createProfile', 'changeEmail', '$q', '$rootScope',
     function($firebaseSimpleLogin, fbutil, createProfile, changeEmail, $q, $rootScope) {
-      console.log('simple login running'); //debug
       var auth = $firebaseSimpleLogin(fbutil.ref());
       var listeners = [];
 

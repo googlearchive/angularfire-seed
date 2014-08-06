@@ -14,6 +14,6 @@
     "firebase": "~1.0.x",
     "firebase-simple-login": "~1.6.x",
     "angularfire": "~0.8.x",
-    "mockfirebase": "~0.2.8"
+    "mockfirebase": "~0.2.9"
   }
 }

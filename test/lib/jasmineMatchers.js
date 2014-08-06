@@ -80,14 +80,14 @@ beforeEach(function() {
      * types can be passed into this method and it will be true if any matches
      * are found.
      */
-    toBeA: function(exp) {
-      var res = compare('a', this.actual, exp, Array.prototype.slice.call(arguments, 2));
+    toBeA: function() {
+      var res = compare('a', this.actual, Array.prototype.slice.call(arguments));
       this.message = res.message;
       return res.pass;
     },
 
-    toBeAn: function(exp) {
-      var res = compare('an', this.actual, exp, Array.prototype.slice.call(arguments, 2));
+    toBeAn: function() {
+      var res = compare('an', this.actual, Array.prototype.slice.call(arguments));
       this.message = res.message;
       return res.pass;
     },
