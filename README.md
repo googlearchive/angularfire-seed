@@ -1,155 +1,304 @@
+# angularfire-seed — the seed for Angular+Firebase apps
 
-# angularFire-seed — the seed for AngularFire apps
+This derivative of [angular-seed](https://github.com/angular/angularfire-seed) is an application 
+skeleton for a typical [AngularFire](http://angularfire.com/) web app. You can use it to quickly 
+bootstrap your Angular + Firebase projects.
 
-This project is an application skeleton for a typical [AngularFire](http://angularfire.com/) web app.
-This library allows you to quickly bootstrap real-time apps using [Firebase](http://www.firebase.com) and [AngularJS](http://www.angularjs.org).
+The seed is preconfigured to install the Angular framework, Firebase, AngularFire, and a bundle of
+development and testing tools.
 
-The seed contains AngularJS libraries, test libraries and a bunch of scripts all preconfigured for
-instant web development gratification. Just clone the repo (or download the zip/tarball), start up
-our (or yours) webserver and you are ready to develop and test your application.
-
-The seed app doesn't do much, just shows how to wire controllers and views together and persist them
-in Firebase. You can check it out by opening app/index.html in your browser (it might not work
-with `file://` scheme in certain browsers, see note below).
-
-_Note: While angular, angularFire, and Firebase can be used client-side-only, and it's possible to create
-apps that don't require a backend server at all, we recommend hosting the project files using a local
-webserver during development to avoid issues with security restrictions (sandbox) in browsers. The
-sandbox implementation varies between browsers, but quite often prevents things like cookies, xhr,
-etc to function properly when an html page is opened via `file://` scheme instead of `http://`._
-
+The seed app doesn't do much, but does demonstrate the basics of Angular + Firebase development,
+including:
+ * binding synchronized objects
+ * binding synchronized arrays
+ * authentication
+ * route security
+ * basic account management
 
 ## How to use angularFire-seed
 
- 1. Clone the angularFire-seed repository
- 1. Open app/js/config.js and add your Firebase URL
- 1. Go to your Firebase URL and enable email/password authentication under the Simple Login tab
- 1. Start hacking...
+Other than one additional configuration step (specifying your Firebase URL), this setup is nearly
+identical to angularfire-seed.
 
-### Serving pages during development
+### Prerequisites
 
-You can pick one of these options:
+You need git to clone the angularfire-seed repository. You can get it from
+[http://git-scm.com/](http://git-scm.com/).
 
-* serve this repository with your webserver
-* install node.js and run `node scripts/web-server.js`
+We also use a number of node.js tools to initialize and test angularfire-seed. You must have node.js and
+its package manager (npm) installed.  You can get them from [http://nodejs.org/](http://nodejs.org/).
 
-Then navigate your browser to `http://localhost:<port>/app/index.html` to see the app running in
-your browser.
+### Clone angularfire-seed
+
+Clone the angularfire-seed repository using [git][git]:
+
+```
+git clone https://github.com/firebase/angularfire-seed.git
+cd angularfire-seed
+```
+
+### Install Dependencies
+
+We have two kinds of dependencies in this project: tools and angular framework code.  The tools help
+us manage and test the application.
+
+* We get the tools we depend upon via `npm`, the [node package manager][npm].
+* We get the angular code via `bower`, a [client-side code package manager][bower].
+
+We have preconfigured `npm` to automatically run `bower` so we can simply do:
+
+```
+npm install
+```
+
+Behind the scenes this will also call `bower install`.  You should find that you have two new
+folders in your project.
+
+* `node_modules` - contains the npm packages for the tools we need
+* `app/bower_components` - contains the angular framework files
+
+*Note that the `bower_components` folder would normally be installed in the root folder but
+angularfire-seed changes this location through the `.bowerrc` file.  Putting it in the app folder makes
+it easier to serve the files by a webserver.*
+
+### Configure the Application
+
+ 1. Open `app/js/config.js` and add your Firebase URL
+ 1. Go to your Firebase dashboard and enable email/password authentication under the Simple Login tab
+ 1. Copy/paste the contents of `config/security-rules.json` into your Security tab.
+
+### Run the Application
+
+We have preconfigured the project with a simple development web server.  The simplest way to start
+this server is:
+
+```
+npm start
+```
+
+Now browse to the app at `http://localhost:8000/app/index.html`.
+
+## Directory Layout
+
+    app/                  --> all of the files to be used in production
+      css/                --> css files
+        app.css           --> default stylesheet
+      img/                --> image files
+      index.html          --> app layout file (the main html template file of the app)
+      index-async.html    --> just like index.html, but loads js files asynchronously
+      js/                 --> javascript files
+        app.js            --> application
+        config.js         --> where you configure Firebase and auth options
+        controllers.js    --> application controllers
+        directives.js     --> application directives
+        decorators.js     --> decorator functions
+        filters.js        --> custom angular filters
+        firebase.utils.js --> some DRY methods for interacting with Firebase and AngularFire
+        routes.js         --> routing and route security for the app
+        services.js       --> custom angular services
+        simpleLogin.js    --> some DRY methods for interacting with `$firebaseSimpleLogin`
+      partials/           --> angular view partials (partial html templates)
+        account.html
+        chat.html
+        home.html
+        login.html
+
+    test/                   --> test config and source files
+      protractor-conf.js    --> config file for running e2e tests with Protractor
+      e2e/                  --> end-to-end specs
+        scenarios.js
+      karma.conf.js         --> config file for running unit tests with Karma
+      unit/                 --> unit level specs/tests
+        configSpec.js       --> specs for config
+        controllersSpec.js  --> specs for controllers
+        directivesSpec.js   --> specs for directives
+        filtersSpec.js      --> specs for filters
+        servicesSpec.js     --> specs for services
 
 
-### Running the app in production
+## Testing
 
-Make sure you set up security rules for your Firebase! An example for this
-seed can be found in `config/security-rules.json`
+There are two kinds of tests in the angularfire-seed application: Unit tests and End to End tests.
 
-Go to your Forge (open your Firebase URL in the browser) and add your sites domain name under
-Auth -> Authorized Request Origins. This allows simple login to work from your web site as well as localhost.
+### Running Unit Tests
 
-The rest really depends on how complex is your app and the overall infrastructure of your system, but
-the general rule is that all you need in production are all the files under the `app/` directory.
-Everything else can be omitted.
+The angularfire-seed app comes preconfigured with unit tests. These are written in
+[Jasmine][jasmine], which we run with the [Karma Test Runner][karma]. We provide a Karma
+configuration file to run them.
 
-Angular apps are really just a bunch of static html, css and js files that just need to be hosted
-somewhere, where they can be accessed by browsers.
+* the configuration is found at `test/karma.conf.js`
+* the unit tests are found in `test/unit/`.
 
-If your Angular app is talking to the backend server via xhr or other means, you need to figure
-out what is the best way to host the static files to comply with the same origin policy if
-applicable. Usually this is done by hosting the files by the backend server or through
-reverse-proxying the backend server(s) and a webserver(s).
+The easiest way to run the unit tests is to use the supplied npm script:
 
+```
+npm test
+```
 
-### Running unit tests
+This script will start the Karma test runner to execute the unit tests. Moreover, Karma will sit and
+watch the source and test files for changes and then re-run the tests whenever any of them change.
+This is the recommended strategy; if your unit tests are being run every time you save a file then
+you receive instant feedback on any changes that break the expected code functionality.
 
-We recommend using [jasmine](http://pivotal.github.com/jasmine/) and
-[Karma](http://karma-runner.github.io) for your unit tests/specs, but you are free
-to use whatever works for you.
+You can also ask Karma to do a single run of the tests and then exit.  This is useful if you want to
+check that a particular version of the code is operating as expected.  The project contains a
+predefined script to do this:
 
-Requires [node.js](http://nodejs.org/), Karma (`sudo npm install -g karma`) and a local
-or remote browser.
-
-* start `scripts/test.sh` (on windows: `scripts\test.bat`)
-  * a browser will start and connect to the Karma server (Chrome is default browser, others can be captured by loading the same url as the one in Chrome or by changing the `config/karma.conf.js` file)
-* to run or re-run tests just change any of your source or test javascript files
+```
+npm run test-single-run
+```
 
 
 ### End to end testing
 
-Angular ships with a baked-in end-to-end test runner that understands angular, your app and allows
-you to write your tests with jasmine-like BDD syntax.
+The angularfire-seed app comes with end-to-end tests, again written in [Jasmine][jasmine]. These tests
+are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
+special features for Angular applications.
 
-Requires a webserver, node.js + `./scripts/web-server.js` or your backend server that hosts the angular static files.
+* the configuration is found at `test/protractor-conf.js`
+* the end-to-end tests are found in `test/e2e/`
 
-Check out the
-[end-to-end runner's documentation](http://docs.angularjs.org/guide/dev_guide.e2e-testing) for more
-info.
+Protractor simulates interaction with our web app and verifies that the application responds
+correctly. Therefore, our web server needs to be serving up the application, so that Protractor
+can interact with it.
 
-* create your end-to-end tests in `test/e2e/scenarios.js`
-* serve your project directory with your http/backend server or node.js + `scripts/web-server.js`
-* to run do one of:
-  * open `http://localhost:port/test/e2e/runner.html` in your browser
-  * run the tests from console with [Karma](http://karma-runner.github.io) via
-    `scripts/e2e-test.sh` or `script/e2e-test.bat`
+```
+npm start
+```
 
-### Receiving updates from upstream
+In addition, since Protractor is built upon WebDriver we need to install this.  The angularfire-seed
+project comes with a predefined script to do this:
 
-When we upgrade angular-seed's repo with newer angular or testing library code, you can just
-fetch the changes and merge them into your project with git.
+```
+npm run update-webdriver
+```
 
-## Directory Layout
+This will download and install the latest version of the stand-alone WebDriver tool.
 
-    app/                --> all of the files to be used in production
-      css/              --> css files
-        app.css         --> default stylesheet
-      img/              --> image files
-      index.html        --> app layout file (the main html template file of the app)
-      index-async.html  --> just like index.html, but loads js files asynchronously
-      js/               --> javascript files
-        app.js          --> application
-        config.js       --> custom angularFire config file
-        controllers.js  --> application controllers
-        directives.js   --> application directives
-        filters.js      --> custom angular filters
-        services.js     --> custom angular services
-      lib/              --> angular and 3rd party javascript libraries
-        angular/        --> the latest angular js libs
-          version.txt       --> version number
-        firebase/
-          angularFire.*.js  --> the angularFire adapter
-      partials/             --> angular view partials (partial html templates)
-        home.html           --> a rudimentary $firebase().$bind() example
-        chat.html           --> a $firebase() sync used as an array, with explicit bindings
-        login.html          --> authentication and registration using $firebaseAuth
-        account.html        --> a secured page (must login to view this)
+Once you have ensured that the development web server hosting our application is up and running
+and WebDriver is updated, you can run the end-to-end tests using the supplied npm script:
 
-    config/karma.conf.js        --> config file for running unit tests with Karma
-    config/karma-e2e.conf.js    --> config file for running e2e tests with Karma
-    config/security-rules.json  --> sample security rules for your Firebase
+```
+npm run protractor
+```
 
-    scripts/            --> handy shell/js/ruby scripts
-      e2e-test.sh       --> runs end-to-end tests with Karma (*nix)
-      e2e-test.bat      --> runs end-to-end tests with Karma (windows)
-      test.bat          --> autotests unit tests with Karma (windows)
-      test.sh           --> autotests unit tests with Karma (*nix)
-      web-server.js     --> simple development webserver based on node.js
+This script will execute the end-to-end tests against the application being hosted on the
+development server.
 
-    test/               --> test source files and libraries
-      e2e/              -->
-        runner.html     --> end-to-end test runner (open in your browser to run)
-        scenarios.js    --> end-to-end specs
-      lib/
-        angular/                --> angular testing libraries
-          angular-mocks.js      --> mocks that replace certain angular services in tests
-          angular-scenario.js   --> angular's scenario (end-to-end) test runner library
-          version.txt           --> version file
-      unit/                     --> unit level specs/tests
-        *Spec.js                --> specs for a specific module in app/js
+
+## Updating Dependencies
+
+Previously we recommended that you merge in changes to angularfire-seed into your own fork of the project.
+Now that the angular framework library code and tools are acquired through package managers (npm and
+bower) you can use these tools instead to update the dependencies.
+
+You can update the tool dependencies by running:
+
+```
+npm update
+```
+
+This will find the latest versions that match the version ranges specified in the `package.json` file.
+
+You can update the Angular, Firebase, and AngularFire dependencies by running:
+
+```
+bower update
+```
+
+This will find the latest versions that match the version ranges specified in the `bower.json` file.
+
+
+## Loading AngularFire Asynchronously
+
+The angularfire-seed project supports loading the framework and application scripts asynchronously.  The
+special `index-async.html` is designed to support this style of loading.  For it to work you must
+inject a piece of Angular JavaScript into the HTML page.  The project has a predefined script to help
+do this.
+
+```
+npm run update-index-async
+```
+
+This will copy the contents of the `angular-loader.js` library file into the `index-async.html` page.
+You can run this every time you update the version of Angular that you are using.
+
+
+## Serving the Application Files
+
+While angular is client-side-only technology and it's possible to create angular webapps that
+don't require a backend server at all, we recommend serving the project files using a local
+webserver during development to avoid issues with security restrictions (sandbox) in browsers. The
+sandbox implementation varies between browsers, but quite often prevents things like cookies, xhr,
+etc to function properly when an html page is opened via `file://` scheme instead of `http://`.
+
+
+### Running the App during Development
+
+The angularfire-seed project comes preconfigured with a local development webserver.  It is a node.js
+tool called [http-server][http-server].  You can start this webserver with `npm start` but you may choose to
+install the tool globally:
+
+```
+sudo npm install -g http-server
+```
+
+Then you can start your own development web server to serve static files from a folder by
+running:
+
+```
+http-server
+```
+
+Alternatively, you can choose to configure your own webserver, such as apache or nginx. Just
+configure your server to serve the files under the `app/` directory.
+
+
+### Running the App in Production
+
+This really depends on how complex is your app and the overall infrastructure of your system, but
+the general rule is that all you need in production are all the files under the `app/` directory.
+Everything else should be omitted.
+
+Angular/Firebase apps are really just a bunch of static html, css and js files that just need to be hosted
+somewhere they can be accessed by browsers.
+
+## Continuous Integration
+
+### Travis CI
+
+[Travis CI][travis] is a continuous integration service, which can monitor GitHub for new commits
+to your repository and execute scripts such as building the app or running tests. The angularfire-seed
+project contains a Travis configuration file, `.travis.yml`, which will cause Travis to run your
+tests when you push to GitHub.
+
+You will need to enable the integration between Travis and GitHub. See the Travis website for more
+instruction on how to do this.
+
+### CloudBees
+
+CloudBees have provided a CI/deployment setup:
+
+<a href="https://grandcentral.cloudbees.com/?CB_clickstart=https://raw.github.com/CloudBees-community/angular-js-clickstart/master/clickstart.json">
+<img src="https://d3ko533tu1ozfq.cloudfront.net/clickstart/deployInstantly.png"/></a>
+
+If you run this, you will get a cloned version of this repo to start working on in a private git repo,
+along with a CI service (in Jenkins) hosted that will run unit and end to end tests in both Firefox and Chrome.
+
 
 ## Contact
 
-More information on AngularFire: http://angularfire.com
-More information on Firebase: http://firebase.com
-More information on AngularJS: http://angularjs.org/
+For more information on Firebase and AngularFire, 
+check out https://firebase.com/docs/web/bindings/angular
 
-## LICENCE
+For more information on AngularJS please check out http://angularjs.org/
 
-[MIT](http://firebase.mit-license.org/)
+[git]: http://git-scm.com/
+[bower]: http://bower.io
+[npm]: https://www.npmjs.org/
+[node]: http://nodejs.org
+[protractor]: https://github.com/angular/protractor
+[jasmine]: http://pivotal.github.com/jasmine/
+[karma]: http://karma-runner.github.io
+[travis]: https://travis-ci.org/
+[http-server]: https://github.com/nodeapps/http-server

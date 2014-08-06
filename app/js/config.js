@@ -7,14 +7,24 @@ angular.module('myApp.config', [])
    // see tags for other versions: https://github.com/firebase/angularFire-seed/tags
    .constant('version', '0.6')
 
-   // where to redirect users if they need to authenticate (see module.routeSecurity)
+   // where to redirect users if they need to authenticate (see routeSecurity.js)
    .constant('loginRedirectPath', '/login')
 
    // your Firebase URL goes here
-   .constant('FBURL', 'https://INSTANCE.firebaseio.com')
+//todo   .constant('FBURL', 'https://INSTANCE.firebaseio.com')
 
    //you can use this one to try out a demo of the seed
-//   .constant('FBURL', 'https://angularfire-seed.firebaseio.com');
+   .constant('FBURL', 'https://angularfire-seed.firebaseio.com')
+
+  // double check that the app has been configured before running it and blowing up space and time
+  .run(['FBURL', '$timeout', function(FBURL, $timeout) {
+    if( FBURL === 'https://INSTANCE.firebaseio.com' ) {
+      angular.element(document.body).html('<h1>Please configure app/js/config.js before running!</h1>');
+      $timeout(function() {
+        angular.element(document.body).removeClass('hide');
+      }, 250);
+    }
+  }]);
 
 
 /*********************

@@ -3,10 +3,14 @@
 
    /* Services */
 
-   angular.module('myApp.services', ['myApp.service.login', 'myApp.service.firebase', 'myApp.service.changeEmail'])
+   angular.module('myApp.services', [])
 
       // put your services here!
       // .service('serviceName', ['dependency', function(dependency) {}]);
+
+     .service('messageList', ['fbutil', function(fbutil) {
+       return fbutil.syncArray('messages', {limit: 10, endAt: null});
+     }]);
 
 })();
 
