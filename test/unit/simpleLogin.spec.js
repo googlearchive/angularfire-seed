@@ -24,9 +24,9 @@ describe('simpleLogin', function() {
   describe('#login', function() {
     it('should return error if $firebaseSimpleLogin.$login fails',
       inject(function($q, simpleLogin) {
-        var cb = jasmine.createSpy();
-        authStub.last.$login.andReturn('test_error', null);
-        simpleLogin.login('test@test.com', '123', cb);
+        var cb = jasmine.createSpy('reject');
+        authStub.$$last.$login.andReturn($q.reject('test_error', null));
+        simpleLogin.login('test@test.com', '123').catch(cb);
         flush();
         expect(cb).toHaveBeenCalledWith('test_error');
       })
@@ -34,20 +34,10 @@ describe('simpleLogin', function() {
 
     it('should return user if $firebaseSimpleLogin.$login succeeds',
       inject(function(simpleLogin) {
-        var cb = jasmine.createSpy();
-        runs(function() {
-          FirebaseSimpleLogin.login.andReturn(null, {uid: 'test123'});
-          simpleLogin.login('test@test.com', '123', cb);
-          flush();
-        });
-
-        waitsFor(function() {
-          return cb.callCount > 0;
-        });
-
-        runs(function() {
-          expect(cb).toHaveBeenCalledWith(null, {hello: 'world'});
-        });
+        var cb = jasmine.createSpy('resolve');
+        simpleLogin.login('test@test.com', '123').then(cb);
+        flush();
+        expect(cb).toHaveBeenCalledWith(jasmine.objectContaining(authStub.$$user));
       })
     );
   });
@@ -55,159 +45,79 @@ describe('simpleLogin', function() {
   describe('#logout', function() {
     it('should invoke $firebaseSimpleLogin.$logout()', function() {
       inject(function(simpleLogin, $firebaseSimpleLogin) {
-        simpleLogin.init('/login');
         simpleLogin.logout();
-        expect($firebaseSimpleLogin.fns.$logout).toHaveBeenCalled();
+        expect($firebaseSimpleLogin.$$last.$logout).toHaveBeenCalled();
       });
     });
   });
 
   describe('#changePassword', function() {
-    beforeEach(inject(function($firebaseSimpleLogin, $q) {
-      customSpy($firebaseSimpleLogin.fns, '$changePassword',
-        function(eml, op, np, cb) {
-          var def = $q.defer();
-          $timeout(function() { def.resolve(); });
-          return def.promise;
-        });
+    var simpleLogin, $fsl;
+    beforeEach(inject(function($firebaseSimpleLogin, _simpleLogin_) {
+      simpleLogin = _simpleLogin_;
+      $fsl = $firebaseSimpleLogin.$$last;
     }));
 
-    it('should fail if old password is missing',
-      inject(function(simpleLogin, $firebaseSimpleLogin) {
-        var cb = jasmine.createSpy();
-        simpleLogin.init('/login');
-        simpleLogin.changePassword({
-          newpass: 123,
-          confirm: 123,
-          callback: cb
-        });
-        flush();
-        expect(cb).toHaveBeenCalledWith('Please enter a password');
-        expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
-      })
-    );
+    it('should fail if $firebaseSimpleLogin fails', function() {
+      var cb = jasmine.createSpy('reject');
+      $fsl.$changePassword.andReturn($q.reject('errr'));
+      simpleLogin.changePassword({
+        oldpass: 124,
+        newpass: 123,
+        confirm: 123
+      }).catch(cb);
+      flush();
+      expect(cb).toHaveBeenCalledWith('errr');
+      expect($fsl.$changePassword).toHaveBeenCalled();
+    });
 
-    it('should fail if new password is missing',
-      inject(function(simpleLogin, $firebaseSimpleLogin) {
-        var cb = jasmine.createSpy();
-        simpleLogin.init('/login');
-        simpleLogin.changePassword({
-          oldpass: 123,
-          confirm: 123,
-          callback: cb
-        });
-        flush();
-        expect(cb).toHaveBeenCalledWith('Please enter a password');
-        expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
-      })
-    );
-
-    it('should fail if passwords don\'t match',
-      inject(function(simpleLogin, $firebaseSimpleLogin) {
-        var cb = jasmine.createSpy();
-        simpleLogin.init('/login');
-        simpleLogin.changePassword({
-          oldpass: 123,
-          newpass: 123,
-          confirm: 124,
-          callback: cb
-        });
-        flush();
-        expect(cb).toHaveBeenCalledWith('Passwords do not match');
-        expect($firebaseSimpleLogin.fns.$changePassword).not.toHaveBeenCalled();
-      })
-    );
-
-    it('should fail if $firebaseSimpleLogin fails',
-      inject(function(simpleLogin, $timeout, $firebaseSimpleLogin) {
-        var cb = jasmine.createSpy();
-        customSpy($firebaseSimpleLogin, '$changePassword', function(email, op, np) {
-          return $q.reject(new ErrorWithCode(123, 'errr'));
-        });
-        simpleLogin.changePassword({
-          oldpass: 124,
-          newpass: 123,
-          confirm: 123
-        }).then(cb);
-        flush();
-        expect(cb.argsForCall[0][0].toString()).toBe('errr');
-        expect($firebaseSimpleLogin.$changePassword).toHaveBeenCalled();
-      })
-    );
-
-    it('should return null if $firebaseSimpleLogin succeeds',
-      inject(function(simpleLogin, $firebaseSimpleLogin) {
-        var cb = jasmine.createSpy();
-        simpleLogin.changePassword({
-          oldpass: 124,
-          newpass: 123,
-          confirm: 123,
-          callback: cb
-        });
-        flush();
-        expect(cb).toHaveBeenCalledWith(null);
-        expect($firebaseSimpleLogin.fns.$changePassword).toHaveBeenCalled();
-      })
-    );
+    it('should resolve to user if $firebaseSimpleLogin succeeds', function() {
+      var cb = jasmine.createSpy('resolve');
+      simpleLogin.changePassword({
+        oldpass: 124,
+        newpass: 123,
+        confirm: 123
+      }).then(cb);
+      flush();
+      expect(cb).toHaveBeenCalledWith(authStub.$$user);
+      expect($fsl.$changePassword).toHaveBeenCalled();
+    });
   });
 
   describe('#createAccount', function() {
-    beforeEach(inject(function($timeout, $firebaseSimpleLogin, $q) {
-      customSpy($firebaseSimpleLogin.fns, '$createUser', function(eml, pass) {
-        var def = $q.defer();
-        $timeout(function() { def.resolve({name: 'kato'}); });
-        return def.promise;
-      });
+    var $fsl, simpleLogin;
+    beforeEach(inject(function($firebaseSimpleLogin, _simpleLogin_) {
+      simpleLogin = _simpleLogin_;
+      $fsl = authStub.$$last;
     }));
 
-    it('should invoke $firebaseSimpleLogin',
-      inject(function(simpleLogin, $firebaseSimpleLogin) {
-        simpleLogin.init('/login');
-        simpleLogin.createAccount('test@test.com', 123);
-        expect($firebaseSimpleLogin.fns.$createUser).toHaveBeenCalled();
-      })
-    );
+    it('should invoke $firebaseSimpleLogin', function() {
+      simpleLogin.createAccount('test@test.com', 123);
+      expect($fsl.$createUser).toHaveBeenCalled();
+    });
 
-    it('should invoke callback if error',
-      inject(function(simpleLogin, $firebaseSimpleLogin, $q) {
-        var cb = jasmine.createSpy(), undefined;
-        customSpy($firebaseSimpleLogin.fns, '$createUser', function(email, pass) {
-          var def = $q.defer();
-          def.reject('joy!');
-          return def.promise;
-        });
-        simpleLogin.init();
-        simpleLogin.createAccount('test@test.com', 123, cb);
-        flush();
-        expect(cb).toHaveBeenCalledWith('joy!');
-      })
-    );
+    it('should reject promise if error', function() {
+      var cb = jasmine.createSpy('reject');
+      $fsl.$createUser.andReturn($q.reject('test_error'));
+      simpleLogin.createAccount('test@test.com', 123).catch(cb);
+      flush();
+      expect(cb).toHaveBeenCalledWith('test_error');
+    });
 
-    it('should invoke callback if success',
-      inject(function(simpleLogin) {
-        var cb = jasmine.createSpy();
-        simpleLogin.init();
-        simpleLogin.createAccount('test@test.com', 123, cb);
-        flush();
-        expect(cb).toHaveBeenCalledWith(null, {name: 'kato'});
-      })
-    )
+    it('should fulfill if success', function() {
+      var cb = jasmine.createSpy('resolve');
+      simpleLogin.createAccount('test@test.com', 123).then(cb);
+      flush();
+      expect(cb).toHaveBeenCalledWith({uid: 'test123'});
+    });
   });
 
-  describe('#createAccount', function() {
-    it('should be the createProfile service',
-      inject(function(simpleLogin, createProfile) {
-        expect(simpleLogin.createAccount).toBe(createProfile);
-      })
-    );
-  });
-
-  describe('createProfile', function() {
+  describe('#createProfile', function() {
     it('should invoke set on Firebase',
       inject(function(createProfile, fbutil) {
         createProfile(123, 'test@test.com');
         flush();
-        expect(fbutil.$$ref.set.argsForCall[0][0]).toEqual({email: 'test@test.com', name: 'Test'});
+        expect(fbutil.$$ref.set).toHaveBeenCalledWith({email: 'test@test.com', name: 'Test'}, jasmine.any(Function));
       })
     );
 
@@ -220,7 +130,9 @@ describe('simpleLogin', function() {
     it('should return any error in the reject',
       inject(function(createProfile, fbutil) {
         var cb = jasmine.createSpy();
-        fbutil.$$ref.set.andReturn('noooooo');
+        fbutil.$$ref.set.andCallFake(function(val, cb) {
+          cb && cb('noooooo');
+        });
         createProfile(456, 'test2@test2.com').then(null, cb);
         flush();
         expect(cb).toHaveBeenCalledWith('noooooo');
@@ -242,6 +154,7 @@ describe('simpleLogin', function() {
     obj.syncObject.andCallFake(function() { return {}; });
     obj.syncArray.andCallFake(function() { return []; });
     obj.ref.andCallFake(function() { return obj.$$ref; });
+    fbutilStub.$$last = obj;
     return obj;
   }
 
@@ -257,19 +170,23 @@ describe('simpleLogin', function() {
     ];
     var obj = jasmine.createSpyObj('$firebaseSimpleLogin', list);
     angular.forEach(list, function(m) {
-      obj[m].andReturn(resolve({uid: 'test123'}));
+      obj[m].andReturn(resolve(authStub.$$user));
     });
-    authStub.last = obj;
+    authStub.$$last = obj;
     return obj;
   }
-
-  function customSpy(obj, m, fn) {
-    obj[m] = fn;
-    spyOn(obj, m).andCallThrough();
-  }
+  authStub.$$user = {uid: 'test123'};
 
   function flush() {
-    try { $timeout.flush(); }
+    try {
+      while(true) {
+        // flush until there is nothing left to flush (i.e. $timeout throws an error)
+        // this is necessary for createAccount which uses some chained promises that
+        // iterate through set/remove/promise calls, all of which have to get flushed
+        fbutilStub.$$last.$$ref.flush();
+        $timeout.flush();
+      }
+    }
     catch(e) {} // is okay
   }
 
