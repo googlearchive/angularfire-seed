@@ -84,7 +84,6 @@ angular.module('myApp.routes', ['ngRoute', 'simpleLogin'])
   .run(['$rootScope', '$location', 'simpleLogin', 'ROUTES', 'loginRedirectPath',
     function($rootScope, $location, simpleLogin, ROUTES, loginRedirectPath) {
       // watch for login status changes and redirect if appropriate
-      simpleLogin.getUser().then(check);
       simpleLogin.watch(check, $rootScope);
 
       // some of our routes may reject resolve promises with the special {authRequired: true} error

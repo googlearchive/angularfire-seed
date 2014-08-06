@@ -9,4 +9,9 @@ angular.module('myApp', [
     'myApp.filters',
     'myApp.routes',
     'myApp.services'
-  ]);
+  ])
+
+  .run(['simpleLogin', function(simpleLogin) {
+    console.log('run'); //debug
+    simpleLogin.getUser();
+  }])

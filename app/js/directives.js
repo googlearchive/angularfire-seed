@@ -17,6 +17,7 @@ angular.module('myApp.directives', ['simpleLogin'])
   .directive('ngShowAuth', ['simpleLogin', '$timeout', function (simpleLogin, $timeout) {
     var isLoggedIn;
     simpleLogin.watch(function(user) {
+      console.log('ngShowAuth', user); //debug
       isLoggedIn = !!user;
     });
 
@@ -24,6 +25,7 @@ angular.module('myApp.directives', ['simpleLogin'])
       restrict: 'A',
       link: function(scope, el) {
         function update() {
+          console.log('updateShow', !isLoggedIn); //debug
           // sometimes if ngCloak exists on same element, they argue, so make sure that
           // this one always runs last for reliability
           $timeout(function () {
@@ -43,6 +45,7 @@ angular.module('myApp.directives', ['simpleLogin'])
   .directive('ngHideAuth', ['simpleLogin', '$timeout', function (simpleLogin, $timeout) {
     var isLoggedIn;
     simpleLogin.watch(function(user) {
+      console.log('ngHideAuth', user); //debug
       isLoggedIn = !!user;
     });
 
@@ -50,6 +53,7 @@ angular.module('myApp.directives', ['simpleLogin'])
       restrict: 'A',
       link: function(scope, el) {
         function update() {
+          console.log('updateHide', isLoggedIn !== false); //debug
           // sometimes if ngCloak exists on same element, they argue, so make sure that
           // this one always runs last for reliability
           $timeout(function () {

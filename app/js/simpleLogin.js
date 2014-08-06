@@ -13,11 +13,9 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
 
   .factory('simpleLogin', ['$firebaseSimpleLogin', 'fbutil', 'createProfile', 'changeEmail', '$q', '$rootScope',
     function($firebaseSimpleLogin, fbutil, createProfile, changeEmail, $q, $rootScope) {
+      console.log('simple login running'); //debug
       var auth = $firebaseSimpleLogin(fbutil.ref());
       var listeners = [];
-      $rootScope.$on('$firebaseSimpleLogin:login', statusChange);
-      $rootScope.$on('$firebaseSimpleLogin:logout', statusChange);
-      $rootScope.$on('$firebaseSimpleLogin:error', statusChange);
 
       function statusChange() {
         fns.getUser().then(function(user) {
@@ -79,6 +77,9 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
         },
 
         watch: function(cb, $scope) {
+          fns.getUser().then(function(user) {
+            cb(user);
+          });
           listeners.push(cb);
           var unbind = function() {
             var i = listeners.indexOf(cb);
@@ -90,6 +91,11 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
           return unbind;
         }
       };
+
+      $rootScope.$on('$firebaseSimpleLogin:login', statusChange);
+      $rootScope.$on('$firebaseSimpleLogin:logout', statusChange);
+      $rootScope.$on('$firebaseSimpleLogin:error', statusChange);
+      statusChange();
 
       return fns;
     }])
