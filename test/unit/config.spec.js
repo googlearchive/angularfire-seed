@@ -5,8 +5,8 @@
 describe('service', function() {
    beforeEach(module('myApp.config'));
 
-   it('should be configured (FBURL was set)', inject(function(FBURL) {
-      expect(FBURL).not.toEqual('https://INSTANCE.firebaseio.com');
+   it('should have the correct URL', inject(function(FBURL) {
+      expect(FBURL).toBe('https://INSTANCE.firebaseio.com');
    }));
 
    it('should have FBURL beginning with https', inject(function(FBURL) {

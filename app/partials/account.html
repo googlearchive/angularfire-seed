@@ -7,53 +7,57 @@
 
         <label>
             <span>Name:</span>
-            <input type="text" name="name" ng-model="user.name"/>
+            <input type="text" name="name" ng-model="profile.name"/>
         </label>
 
         <label>
             <span>Email:</span>
-            <input type="text" name="name" ng-model="user.email"/>
+            <br />{{profile.email}}
         </label>
     </fieldset>
+</form>
 
+<form>
     <fieldset>
         <legend>Change Password</legend>
 
         <label>
             <span>Old Password:</span>
-            <input type="password" ng-keypress="reset()" ng-model="oldpass"/>
+            <input type="password" ng-keypress="clear()" ng-model="oldpass"/>
         </label>
 
         <label>
             <span>New Password:</span>
-            <input type="password" ng-keypress="reset()" ng-model="newpass"/>
+            <input type="password" ng-keypress="clear()" ng-model="newpass"/>
         </label>
 
         <label>
-            <span>Confirm Password:</span>
-            <input type="password" ng-keypress="reset()" ng-model="confirm"/>
+            <span>Confirm New Password:</span>
+            <input type="password" ng-keypress="clear()" ng-model="confirm"/>
         </label>
 
-        <button ng-click="updatePassword()">update password</button>
+        <button ng-click="changePassword(oldpass, newpass, confirm)">change password</button>
 
         <p class="error" ng-show="err">{{err}}</p>
         <p class="good" ng-show="msg">{{msg}}</p>
     </fieldset>
+</form>
 
+<form>
     <fieldset>
         <legend>Change Email</legend>
 
         <label>
             <span>New Email:</span>
-            <input type="text" ng-keypress="reset()" ng-model="newemail"/>
+            <input type="text" ng-keypress="clear()" ng-model="newEmail"/>
         </label>
 
         <label>
             <span>Password:</span>
-            <input type="password" ng-keypress="reset()" ng-model="pass"/>
+            <input type="password" ng-keypress="clear()" ng-model="pass"/>
         </label>
 
-        <button ng-click="updateEmail()">update email</button>
+        <button ng-click="changeEmail(pass, newEmail)">update email</button>
 
         <p class="error" ng-show="emailerr">{{emailerr}}</p>
         <p class="good" ng-show="emailmsg">{{emailmsg}}</p>

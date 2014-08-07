@@ -2,158 +2,119 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', [])
-   .controller('HomeCtrl', ['$scope', 'syncData', function($scope, syncData) {
-      syncData('syncedValue').$bind($scope, 'syncedValue');
-   }])
+angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
+  .controller('HomeCtrl', ['$scope', 'fbutil', 'user', 'FBURL', function($scope, fbutil, user, FBURL) {
+    $scope.syncedValue = fbutil.syncObject('syncedValue');
+    $scope.user = user;
+    $scope.FBURL = FBURL;
+  }])
 
-  .controller('ChatCtrl', ['$scope', 'syncData', function($scope, syncData) {
-      $scope.newMessage = null;
-
-      // constrain number of messages by limit into syncData
-      // add the array into $scope.messages
-      $scope.messages = syncData('messages', 10);
-
-      // add new messages to the list
-      $scope.addMessage = function() {
-         if( $scope.newMessage ) {
-            $scope.messages.$add({text: $scope.newMessage});
-            $scope.newMessage = null;
-         }
-      };
-   }])
-
-   .controller('LoginCtrl', ['$scope', 'loginService', '$location', function($scope, loginService, $location) {
-      $scope.email = null;
-      $scope.pass = null;
-      $scope.confirm = null;
-      $scope.createMode = false;
-
-      $scope.login = function(cb) {
-         $scope.err = null;
-         if( !$scope.email ) {
-            $scope.err = 'Please enter an email address';
-         }
-         else if( !$scope.pass ) {
-            $scope.err = 'Please enter a password';
-         }
-         else {
-            loginService.login($scope.email, $scope.pass, function(err, user) {
-               $scope.err = err? err + '' : null;
-               if( !err ) {
-                  cb && cb(user);
-               }
-            });
-         }
-      };
-
-      $scope.createAccount = function() {
-         $scope.err = null;
-         if( assertValidLoginAttempt() ) {
-            loginService.createAccount($scope.email, $scope.pass, function(err, user) {
-               if( err ) {
-                  $scope.err = err? err + '' : null;
-               }
-               else {
-                  // must be logged in before I can write to my profile
-                  $scope.login(function() {
-                     loginService.createProfile(user.uid, user.email);
-                     $location.path('/account');
-                  });
-               }
-            });
-         }
-      };
-
-      function assertValidLoginAttempt() {
-         if( !$scope.email ) {
-            $scope.err = 'Please enter an email address';
-         }
-         else if( !$scope.pass ) {
-            $scope.err = 'Please enter a password';
-         }
-         else if( $scope.pass !== $scope.confirm ) {
-            $scope.err = 'Passwords do not match';
-         }
-         return !$scope.err;
+  .controller('ChatCtrl', ['$scope', 'messageList', function($scope, messageList) {
+    $scope.messages = messageList;
+    $scope.addMessage = function(newMessage) {
+      if( newMessage ) {
+        $scope.messages.$add({text: newMessage});
       }
-   }])
+    };
+  }])
 
-   .controller('AccountCtrl', ['$scope', 'loginService', 'changeEmailService', 'firebaseRef', 'syncData', '$location', 'FBURL', function($scope, loginService, changeEmailService, firebaseRef, syncData, $location, FBURL) {
-      $scope.syncAccount = function() {
-         $scope.user = {};
-         syncData(['users', $scope.auth.user.uid]).$bind($scope, 'user').then(function(unBind) {
-            $scope.unBindAccount = unBind;
-         });
-      };
-      // set initial binding
-      $scope.syncAccount();
+  .controller('LoginCtrl', ['$scope', 'simpleLogin', '$location', function($scope, simpleLogin, $location) {
+    $scope.email = null;
+    $scope.pass = null;
+    $scope.confirm = null;
+    $scope.createMode = false;
 
+    $scope.login = function(email, pass) {
+      $scope.err = null;
+      simpleLogin.login(email, pass)
+        .then(function(/* user */) {
+          $location.path('/account');
+        }, function(err) {
+          $scope.err = errMessage(err);
+        });
+    };
+
+    $scope.createAccount = function() {
+      $scope.err = null;
+      if( assertValidAccountProps() ) {
+        simpleLogin.createAccount($scope.email, $scope.pass)
+          .then(function(/* user */) {
+            $location.path('/account');
+          }, function(err) {
+            $scope.err = errMessage(err);
+          });
+      }
+    };
+
+    function assertValidAccountProps() {
+      if( !$scope.email ) {
+        $scope.err = 'Please enter an email address';
+      }
+      else if( !$scope.pass || !$scope.confirm ) {
+        $scope.err = 'Please enter a password';
+      }
+      else if( $scope.createMode && $scope.pass !== $scope.confirm ) {
+        $scope.err = 'Passwords do not match';
+      }
+      return !$scope.err;
+    }
+
+    function errMessage(err) {
+      return angular.isObject(err) && err.code? err.code : err + '';
+    }
+  }])
+
+  .controller('AccountCtrl', ['$scope', 'simpleLogin', 'fbutil', 'user', '$location',
+    function($scope, simpleLogin, fbutil, user, $location) {
+      // create a 3-way binding with the user profile object in Firebase
+      var profile = fbutil.syncObject(['users', user.uid]);
+      profile.$bindTo($scope, 'profile');
+
+      // expose logout function to scope
       $scope.logout = function() {
-         loginService.logout();
+        profile.$destroy();
+        simpleLogin.logout();
+        $location.path('/login');
       };
 
-      $scope.oldpass = null;
-      $scope.newpass = null;
-      $scope.confirm = null;
-
-      $scope.reset = function() {
-         $scope.err = null;
-         $scope.msg = null;
-         $scope.emailerr = null;
-         $scope.emailmsg = null;
+      $scope.changePassword = function(pass, confirm, newPass) {
+        resetMessages();
+        if( !pass || !confirm || !newPass ) {
+          $scope.err = 'Please fill in all password fields';
+        }
+        else if( newPass !== confirm ) {
+          $scope.err = 'New pass and confirm do not match';
+        }
+        else {
+          simpleLogin.changePassword(profile.email, pass, newPass)
+            .then(function() {
+              $scope.msg = 'Password changed';
+            }, function(err) {
+              $scope.err = err;
+            })
+        }
       };
 
-      $scope.updatePassword = function() {
-         $scope.reset();
-         loginService.changePassword(buildPwdParms());
+      $scope.clear = resetMessages;
+
+      $scope.changeEmail = function(pass, newEmail) {
+        resetMessages();
+        profile.$destroy();
+        simpleLogin.changeEmail(pass, newEmail)
+          .then(function(user) {
+            profile = fbutil.syncObject(['users', user.uid]);
+            profile.$bindTo($scope, 'profile');
+            $scope.emailmsg = 'Email changed';
+          }, function(err) {
+            $scope.emailerr = err;
+          });
       };
 
-      $scope.updateEmail = function() {
-        $scope.reset();
-        // disable bind to prevent junk data being left in firebase
-        $scope.unBindAccount();
-        changeEmailService(buildEmailParms());
-      };
-
-      function buildPwdParms() {
-         return {
-            email: $scope.auth.user.email,
-            oldpass: $scope.oldpass,
-            newpass: $scope.newpass,
-            confirm: $scope.confirm,
-            callback: function(err) {
-               if( err ) {
-                  $scope.err = err;
-               }
-               else {
-                  $scope.oldpass = null;
-                  $scope.newpass = null;
-                  $scope.confirm = null;
-                  $scope.msg = 'Password updated!';
-               }
-            }
-         };
+      function resetMessages() {
+        $scope.err = null;
+        $scope.msg = null;
+        $scope.emailerr = null;
+        $scope.emailmsg = null;
       }
-      function buildEmailParms() {
-         return {
-            newEmail: $scope.newemail,
-            pass: $scope.pass,
-            callback: function(err) {
-               if( err ) {
-                  $scope.emailerr = err;
-                  // reinstate binding
-                  $scope.syncAccount();
-               }
-               else {
-                  // reinstate binding
-                  $scope.syncAccount();
-                  $scope.newemail = null;
-                  $scope.pass = null;
-                  $scope.emailmsg = 'Email updated!';
-               }
-            }
-         };
-      }
-
-   }]);
+    }
+  ]);

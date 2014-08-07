@@ -1,7 +1,7 @@
 /* app css stylesheet */
 
-.hide {
-   display: none;
+body {
+  margin: 10px;
 }
 
 .menu {
