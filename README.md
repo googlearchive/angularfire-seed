@@ -15,7 +15,7 @@ including:
  * route security
  * basic account management
 
-## How to use angularFire-seed
+## How to use angularfire-seed
 
 Other than one additional configuration step (specifying your Firebase URL), this setup is nearly
 identical to angularfire-seed.
@@ -65,7 +65,7 @@ it easier to serve the files by a webserver.*
 
  1. Open `app/js/config.js` and add your Firebase URL
  1. Go to your Firebase dashboard and enable email/password authentication under the Simple Login tab
- 1. Copy/paste the contents of `config/security-rules.json` into your Security tab.
+ 1. Copy/paste the contents of `config/security-rules.json` into your Security tab, which is also under your Firebase dashboard.
 
 ### Run the Application
 
@@ -127,7 +127,7 @@ The angularfire-seed app comes preconfigured with unit tests. These are written 
 configuration file to run them.
 
 * the configuration is found at `test/karma.conf.js`
-* the unit tests are found in `test/unit/`.
+* the unit tests are found in `test/unit/`
 
 The easiest way to run the unit tests is to use the supplied npm script:
 
@@ -226,7 +226,7 @@ You can run this every time you update the version of Angular that you are using
 
 ## Serving the Application Files
 
-While angular is client-side-only technology and it's possible to create angular webapps that
+While Angular is client-side-only technology and it's possible to create Angular webapps that
 don't require a backend server at all, we recommend serving the project files using a local
 webserver during development to avoid issues with security restrictions (sandbox) in browsers. The
 sandbox implementation varies between browsers, but quite often prevents things like cookies, xhr,
@@ -298,7 +298,7 @@ For more information on AngularJS please check out http://angularjs.org/
 [npm]: https://www.npmjs.org/
 [node]: http://nodejs.org
 [protractor]: https://github.com/angular/protractor
-[jasmine]: http://pivotal.github.com/jasmine/
+[jasmine]: http://jasmine.github.io/1.3/introduction.html
 [karma]: http://karma-runner.github.io
 [travis]: https://travis-ci.org/
 [http-server]: https://github.com/nodeapps/http-server
