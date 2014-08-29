@@ -5,12 +5,12 @@ angular.module('myApp.config', [])
 
   // version of this seed app is compatible with angularFire 0.6
   // see tags for other versions: https://github.com/firebase/angularFire-seed/tags
-  .constant('version', '0.8.0')
+  .constant('version', '0.8.2')
 
   // where to redirect users if they need to authenticate (see routeSecurity.js)
   .constant('loginRedirectPath', '/login')
 
-  // your Firebase data URL goes here
+  // your Firebase data URL goes here, no trailing slash
   .constant('FBURL', 'https://INSTANCE.firebaseio.com')
 
   // double check that the app has been configured before running it and blowing up space and time
@@ -23,13 +23,3 @@ angular.module('myApp.config', [])
     }
   }]);
 
-
-/*********************
- * !!FOR E2E TESTING!!
- *
- * Must enable email/password logins and manually create
- * the test user before the e2e tests will pass
- *
- * user: test@test.com
- * pass: test123
- */
