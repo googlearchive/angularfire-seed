@@ -18,7 +18,7 @@ including:
 ## How to use angularfire-seed
 
 Other than one additional configuration step (specifying your Firebase URL), this setup is nearly
-identical to angularfire-seed.
+identical to angular-seed.
 
 ### Prerequisites
 
