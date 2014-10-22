@@ -63,7 +63,7 @@ it easier to serve the files by a webserver.*
 
 ### Configure the Application
 
- 1. Open `app/js/config.js` and add your Firebase URL
+ 1. Open `app/js/config.js` and set the value of FBURL constant to your Firebase URL
  1. Go to your Firebase dashboard and enable email/password authentication under the Simple Login tab
  1. Copy/paste the contents of `config/security-rules.json` into your Security tab, which is also under your Firebase dashboard.
 
