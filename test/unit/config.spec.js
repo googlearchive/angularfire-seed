@@ -6,7 +6,7 @@ describe('service', function() {
    beforeEach(module('myApp.config'));
 
    it('should have a valid FBURL', inject(function(FBURL) {
-      expect(FBURL).toMatch(/^https:\/\/[a-zA-Z_-]+\.firebaseio\.com$/i);
+      expect(FBURL).toMatch(/^https:\/\/[a-zA-Z0-9_-]+\.firebaseio\.com$/i);
    }));
 
    it('should have a valid SEMVER version', inject(function(version) {
