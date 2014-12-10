@@ -1,0 +1,9 @@
+{
+  "firebase": "INSTANCE",
+  "public": "app",
+  "ignore": [
+    "firebase.json",
+    "**/.*",
+    "**/node_modules/**"
+  ]
+}
