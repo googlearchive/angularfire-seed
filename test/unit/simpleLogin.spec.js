@@ -1,66 +1,60 @@
 "use strict";
-describe('simpleLogin', function() {
-  var $q, $timeout;
+describe('auth', function() {
+  var $q, $timeout, auth, fbutil, simpleLogin;
   beforeEach(function() {
-    MockFirebase.override();
+    module('mock.firebase');
     module('simpleLogin');
+    module('mock.fbutil');
+    module('mock.firebaseAuth');
     module(function($provide) {
-      // mock dependencies used by our services to isolate testing
-      $provide.value('$location', stub('path'));
-      $provide.value('fbutil', fbutilStub());
-      $provide.value('$firebaseSimpleLogin', authStub);
+      // mock up $location since we don't want to change paths here
+      $provide.value('$location', {path: jasmine.createSpy()});
     });
-    inject(function(_$q_, _$timeout_) {
+    inject(function(_$q_, _$timeout_, $firebaseAuth, _fbutil_, _simpleLogin_) {
       $q = _$q_;
       $timeout = _$timeout_;
+      fbutil = _fbutil_;
+      auth = $firebaseAuth(fbutil.ref());
+      simpleLogin = _simpleLogin_;
     });
-  });
-
-  afterEach(function() {
-    window.Firebase = MockFirebase._origFirebase;
-    window.FirebaseSimpleLogin = MockFirebase._origFirebaseSimpleLogin;
   });
 
   describe('#login', function() {
-    it('should return error if $firebaseSimpleLogin.$login fails',
+    it('should return error if $authWithPassword fails',
       inject(function($q, simpleLogin) {
         var cb = jasmine.createSpy('reject');
-        authStub.$$last.$login.andReturn($q.reject('test_error', null));
+        spyOn(auth, '$authWithPassword').andReturn(reject('test_error', null));
         simpleLogin.login('test@test.com', '123').catch(cb);
         flush();
         expect(cb).toHaveBeenCalledWith('test_error');
       })
     );
 
-    it('should return user if $firebaseSimpleLogin.$login succeeds',
+    it('should return user if $authWithPassword succeeds',
       inject(function(simpleLogin) {
+        spyOn(auth, '$authWithPassword').andReturn(resolve({uid: 'kato'}));
         var cb = jasmine.createSpy('resolve');
         simpleLogin.login('test@test.com', '123').then(cb);
         flush();
-        expect(cb).toHaveBeenCalledWith(jasmine.objectContaining(authStub.$$user));
+        expect(cb).toHaveBeenCalledWith({uid: 'kato'});
       })
     );
   });
 
   describe('#logout', function() {
-    it('should invoke $firebaseSimpleLogin.$logout()', function() {
-      inject(function(simpleLogin, $firebaseSimpleLogin) {
+    it('should invoke $firebaseAuth.$unauth()', function() {
+      inject(function(simpleLogin) {
+        spyOn(auth, '$unauth');
         simpleLogin.logout();
-        expect($firebaseSimpleLogin.$$last.$logout).toHaveBeenCalled();
+        expect(auth.$unauth).toHaveBeenCalled();
       });
     });
   });
 
   describe('#changePassword', function() {
-    var simpleLogin, $fsl;
-    beforeEach(inject(function($firebaseSimpleLogin, _simpleLogin_) {
-      simpleLogin = _simpleLogin_;
-      $fsl = $firebaseSimpleLogin.$$last;
-    }));
-
     it('should fail if $firebaseSimpleLogin fails', function() {
+      spyOn(auth, '$changePassword').andReturn(reject('errr'));
       var cb = jasmine.createSpy('reject');
-      $fsl.$changePassword.andReturn($q.reject('errr'));
       simpleLogin.changePassword({
         oldpass: 124,
         newpass: 123,
@@ -68,10 +62,11 @@ describe('simpleLogin', function() {
       }).catch(cb);
       flush();
       expect(cb).toHaveBeenCalledWith('errr');
-      expect($fsl.$changePassword).toHaveBeenCalled();
+      expect(auth.$changePassword).toHaveBeenCalled();
     });
 
     it('should resolve to user if $firebaseSimpleLogin succeeds', function() {
+      spyOn(auth, '$changePassword').andReturn(resolve({uid: 'kato'}));
       var cb = jasmine.createSpy('resolve');
       simpleLogin.changePassword({
         oldpass: 124,
@@ -79,34 +74,36 @@ describe('simpleLogin', function() {
         confirm: 123
       }).then(cb);
       flush();
-      expect(cb).toHaveBeenCalledWith(authStub.$$user);
-      expect($fsl.$changePassword).toHaveBeenCalled();
+      expect(cb).toHaveBeenCalledWith({uid: 'kato'});
+      expect(auth.$changePassword).toHaveBeenCalled();
     });
   });
 
   describe('#createAccount', function() {
-    var $fsl, simpleLogin;
-    beforeEach(inject(function($firebaseSimpleLogin, _simpleLogin_) {
+    var simpleLogin;
+    beforeEach(inject(function(_simpleLogin_) {
       simpleLogin = _simpleLogin_;
-      $fsl = authStub.$$last;
     }));
 
-    it('should invoke $firebaseSimpleLogin', function() {
-      simpleLogin.createAccount('test@test.com', 123);
-      expect($fsl.$createUser).toHaveBeenCalled();
+    it('should invoke $createUser', function() {
+      spyOn(auth, '$createUser').andReturn(resolve());
+      simpleLogin.createAccount('test@test.com', '123');
+      expect(auth.$createUser).toHaveBeenCalled();
     });
 
     it('should reject promise if error', function() {
       var cb = jasmine.createSpy('reject');
-      $fsl.$createUser.andReturn($q.reject('test_error'));
-      simpleLogin.createAccount('test@test.com', 123).catch(cb);
+      spyOn(auth, '$createUser').andReturn(reject('test_error'));
+      simpleLogin.createAccount('test@test.com', '123').catch(cb);
       flush();
       expect(cb).toHaveBeenCalledWith('test_error');
     });
 
     it('should fulfill if success', function() {
       var cb = jasmine.createSpy('resolve');
-      simpleLogin.createAccount('test@test.com', 123).then(cb);
+      simpleLogin.createAccount('test@test.com', '123').then(cb);
+      flush();
+      auth.$$ref.changeAuthState({uid: 'test123'});
       flush();
       expect(cb).toHaveBeenCalledWith({uid: 'test123'});
     });
@@ -115,9 +112,10 @@ describe('simpleLogin', function() {
   describe('#createProfile', function() {
     it('should invoke set on Firebase',
       inject(function(createProfile, fbutil) {
+        spyOn(fbutil.ref(), 'set');
         createProfile(123, 'test@test.com');
         flush();
-        expect(fbutil.$$ref.set).toHaveBeenCalledWith({email: 'test@test.com', name: 'Test'}, jasmine.any(Function));
+        expect(fbutil.ref().set).toHaveBeenCalledWith({email: 'test@test.com', name: 'Test'}, jasmine.any(Function));
       })
     );
 
@@ -130,33 +128,15 @@ describe('simpleLogin', function() {
     it('should return any error in the reject',
       inject(function(createProfile, fbutil) {
         var cb = jasmine.createSpy();
-        fbutil.$$ref.set.andCallFake(function(val, cb) {
-          cb && cb('noooooo');
+        spyOn(fbutil.ref(), 'set').andCallFake(function() {
+          cb && cb('nooo');
         });
         createProfile(456, 'test2@test2.com').then(null, cb);
         flush();
-        expect(cb).toHaveBeenCalledWith('noooooo');
+        expect(cb).toHaveBeenCalledWith('nooo');
       })
     );
   });
-
-  function stub() {
-    var out = {};
-    angular.forEach(arguments, function(m) {
-      out[m] = jasmine.createSpy();
-    });
-    return out;
-  }
-
-  function fbutilStub() {
-    var obj = jasmine.createSpyObj('fbutil', ['syncObject', 'syncArray', 'ref']);
-    obj.$$ref = new Firebase();
-    obj.syncObject.andCallFake(function() { return {}; });
-    obj.syncArray.andCallFake(function() { return []; });
-    obj.ref.andCallFake(function() { return obj.$$ref; });
-    fbutilStub.$$last = obj;
-    return obj;
-  }
 
   function resolve() {
     var def = $q.defer();
@@ -164,26 +144,18 @@ describe('simpleLogin', function() {
     return def.promise;
   }
 
-  function authStub() {
-    var list = [
-      '$login', '$logout', '$createUser', '$changePassword', '$removeUser', '$getCurrentUser', '$sendPasswordResetEmail'
-    ];
-    var obj = jasmine.createSpyObj('$firebaseSimpleLogin', list);
-    angular.forEach(list, function(m) {
-      obj[m].andReturn(resolve(authStub.$$user));
-    });
-    authStub.$$last = obj;
-    return obj;
+  function reject(err) {
+    return $q.reject(err);
   }
-  authStub.$$user = {uid: 'test123'};
 
   function flush() {
     try {
       while(true) {
         // flush until there is nothing left to flush (i.e. $timeout throws an error)
-        // this is necessary for createAccount which uses some chained promises that
-        // iterate through set/remove/promise calls, all of which have to get flushed
-        fbutilStub.$$last.$$ref.flush();
+        // this is necessary as some of the auth methods end up chaining multiple events,
+        // each of which utilizes $timeout--hopefully we can fix this by switching to $evalAsync
+        // in the future
+        try { fbutil.ref().flush(); } catch(e) {}
         $timeout.flush();
       }
     }

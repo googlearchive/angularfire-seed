@@ -11,17 +11,15 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
     }
   }])
 
-  .factory('simpleLogin', ['$firebaseSimpleLogin', 'fbutil', 'createProfile', 'changeEmail', '$q', '$rootScope',
-    function($firebaseSimpleLogin, fbutil, createProfile, changeEmail, $q, $rootScope) {
-      var auth = $firebaseSimpleLogin(fbutil.ref());
+  .factory('simpleLogin', ['$firebaseAuth', 'fbutil', 'createProfile', 'changeEmail',
+    function($firebaseAuth, fbutil, createProfile, changeEmail) {
+      var auth = $firebaseAuth(fbutil.ref());
       var listeners = [];
 
       function statusChange() {
-        fns.getUser().then(function(user) {
-          fns.user = user || null;
-          angular.forEach(listeners, function(fn) {
-            fn(user||null);
-          });
+        fns.user = auth.$getAuth();
+        angular.forEach(listeners, function(fn) {
+          fn(fns.user);
         });
       }
 
@@ -29,7 +27,7 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
         user: null,
 
         getUser: function() {
-          return auth.$getCurrentUser();
+          return auth.$waitForAuth();
         },
 
         /**
@@ -38,15 +36,14 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
          * @returns {*}
          */
         login: function(email, pass) {
-          return auth.$login('password', {
+          return auth.$authWithPassword({
             email: email,
-            password: pass,
-            rememberMe: true
-          });
+            password: pass
+          }, {rememberMe: true});
         },
 
         logout: function() {
-          auth.$logout();
+          auth.$unauth();
         },
 
         createAccount: function(email, pass, name) {
@@ -57,14 +54,14 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
             })
             .then(function(user) {
               // store user data in Firebase after creating account
-              return createProfile(user.uid, email, name).then(function() {
+              return createProfile(user.uid, email, name).then(function () {
                 return user;
-              })
+              });
             });
         },
 
         changePassword: function(email, oldpass, newpass) {
-          return auth.$changePassword(email, oldpass, newpass);
+          return auth.$changePassword({email: email, oldPassword: oldpass, newPassword: newpass});
         },
 
         changeEmail: function(password, newEmail) {
@@ -72,7 +69,7 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
         },
 
         removeUser: function(email, pass) {
-          return auth.$removeUser(email, pass);
+          return auth.$removeUser({email: email, password: pass});
         },
 
         watch: function(cb, $scope) {
@@ -91,9 +88,7 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
         }
       };
 
-      $rootScope.$on('$firebaseSimpleLogin:login', statusChange);
-      $rootScope.$on('$firebaseSimpleLogin:logout', statusChange);
-      $rootScope.$on('$firebaseSimpleLogin:error', statusChange);
+      auth.$onAuth(statusChange);
       statusChange();
 
       return fns;

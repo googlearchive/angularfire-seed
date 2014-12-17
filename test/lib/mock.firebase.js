@@ -1,9 +1,8 @@
 
 angular.module('mock.firebase', [])
-  .value('Firebase', MockFirebase)
-  .config(function($windowProvider) {
-    $windowProvider.Firebase = $windowProvider.MockFirebase;
+  .run(function($window) {
+    $window.Firebase = $window.MockFirebase;
   })
-  .run(function() {
-    MockFirebase.override();
+  .factory('Firebase', function($window) {
+    return $window.MockFirebase;
   });
