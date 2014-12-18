@@ -1,7 +1,11 @@
 angular.module('changeEmail', ['firebase.utils'])
-  .factory('changeEmail', ['fbutil', '$q', function(fbutil, $q) {
+  .factory('changeEmail', ['fbutil', '$q', '$rootScope', function(fbutil, $q, $rootScope) {
     return function(password, oldEmail, newEmail, simpleLogin) {
       var ctx = { old: { email: oldEmail }, curr: { email: newEmail } };
+
+      // this prevents the routes.js logic from redirecting to the login page
+      // while we log out of the old account and into the new one, see routes.js
+      $rootScope.authChangeInProgress = true;
 
       // execute activities in order; first we authenticate the user
       return authOldAccount()
@@ -18,7 +22,10 @@ angular.module('changeEmail', ['firebase.utils'])
         .then( removeOldLogin )
         // and now authenticate as the new user
         .then( authNewAccount )
-        .catch(function(err) { console.error(err); return $q.reject(err); });
+        .catch(function(err) { console.error(err); return $q.reject(err); })
+        .finally(function() {
+          $rootScope.authChangeInProgress = false;
+        });
 
       function authOldAccount() {
         return simpleLogin.login(ctx.old.email, password).then(function(user) {

@@ -138,6 +138,10 @@ describe('auth', function() {
     );
   });
 
+  describe('#changeEmail', function() {
+    it('should have tests'); //todo-test
+  });
+
   function resolve() {
     var def = $q.defer();
     def.resolve.apply(def, Array.prototype.slice.call(arguments, 0));
