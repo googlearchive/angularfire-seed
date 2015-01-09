@@ -95,10 +95,6 @@ angular.module('myApp.routes', ['ngRoute', 'simpleLogin'])
       });
 
       function check(user) {
-        // used by the changeEmail functionality so the user
-        // isn't redirected to the login screen while we switch
-        // out the accounts (see changeEmail.js)
-        if( $rootScope.authChangeInProgress ) { return; }
         if( !user && authRequired($location.path()) ) {
           $location.path(loginRedirectPath);
         }

@@ -1,5 +1,5 @@
 
-angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
+angular.module('simpleLogin', ['firebase', 'firebase.utils'])
 
   // a simple wrapper on simpleLogin.getUser() that rejects the promise
   // if the user does not exists (i.e. makes user required)
@@ -65,7 +65,10 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
         },
 
         changeEmail: function(password, oldEmail, newEmail) {
-          return changeEmail(password, oldEmail, newEmail, this);
+          return auth.$changeEmail({password: password, oldEmail: oldEmail, newEmail: newEmail}, this)
+            .then(function() {
+              return changeEmail(fns.user.uid, newEmail)
+            });
         },
 
         removeUser: function(email, pass) {
@@ -93,6 +96,22 @@ angular.module('simpleLogin', ['firebase', 'firebase.utils', 'changeEmail'])
 
       return fns;
     }])
+
+  .factory('changeEmail', ['fbutil', '$q', '$timeout', function(fbutil, $q, $timeout) {
+    return function(uid, email) {
+      console.log('changeEmail', uid, email); //debug
+      var def = $q.defer();
+      var ref = fbutil.ref('users', uid, 'email');
+      ref.set(email, function(err) {
+        console.log('set completed', err); //debug
+        $timeout(function() {
+          if( err ) { def.reject(err); }
+          else { def.resolve(uid); }
+        });
+      });
+      return def.promise;
+    }
+  }])
 
   .factory('createProfile', ['fbutil', '$q', '$timeout', function(fbutil, $q, $timeout) {
     return function(id, email, name) {

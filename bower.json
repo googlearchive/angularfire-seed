@@ -6,13 +6,13 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "angular": "~1.2.x",
-    "angular-route": "~1.2.x",
-    "angular-loader": "~1.2.x",
-    "angular-mocks": "~1.2.x",
+    "angular": "~1.3.8",
+    "angular-route": "~1.3.8",
+    "angular-loader": "~1.3.8",
+    "angular-mocks": "~1.3.8",
     "html5-boilerplate": "~4.3.0",
-    "firebase": "2.0.x",
-    "angularfire": "0.9.1",
+    "firebase": "2.1.0",
+    "angularfire": "~0.9.1",
     "mockfirebase": "~0.8.0"
   }
 }

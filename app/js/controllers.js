@@ -100,11 +100,8 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
       $scope.changeEmail = function(pass, newEmail) {
         resetMessages();
         var oldEmail = profile.email;
-        profile.$destroy();
         simpleLogin.changeEmail(pass, oldEmail, newEmail)
-          .then(function(user) {
-            profile = fbutil.syncObject(['users', user.uid]);
-            profile.$bindTo($scope, 'profile');
+          .then(function() {
             $scope.emailmsg = 'Email changed';
           }, function(err) {
             $scope.emailerr = err;
