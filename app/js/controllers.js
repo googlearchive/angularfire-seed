@@ -2,9 +2,9 @@
 
 /* Controllers */
 
-angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
-  .controller('HomeCtrl', ['$scope', 'fbutil', 'user', 'FBURL', function($scope, fbutil, user, FBURL) {
-    $scope.syncedValue = fbutil.syncObject('syncedValue');
+angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
+  .controller('HomeCtrl', ['$scope', 'fbutil', 'user', '$firebaseObject', 'FBURL', function($scope, fbutil, user, $firebaseObject, FBURL) {
+    $scope.syncedValue = $firebaseObject(fbutil.ref('syncedValue'));
     $scope.user = user;
     $scope.FBURL = FBURL;
   }])
@@ -18,7 +18,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
     };
   }])
 
-  .controller('LoginCtrl', ['$scope', 'simpleLogin', '$location', function($scope, simpleLogin, $location) {
+  .controller('LoginCtrl', ['$scope', 'Auth', '$location', function($scope, Auth, $location) {
     $scope.email = null;
     $scope.pass = null;
     $scope.confirm = null;
@@ -26,7 +26,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
 
     $scope.login = function(email, pass) {
       $scope.err = null;
-      simpleLogin.login(email, pass)
+      Auth.login(email, pass)
         .then(function(/* user */) {
           $location.path('/account');
         }, function(err) {
@@ -37,7 +37,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
     $scope.createAccount = function() {
       $scope.err = null;
       if( assertValidAccountProps() ) {
-        simpleLogin.createAccount($scope.email, $scope.pass)
+        Auth.createAccount($scope.email, $scope.pass)
           .then(function(/* user */) {
             $location.path('/account');
           }, function(err) {
@@ -64,16 +64,18 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
     }
   }])
 
-  .controller('AccountCtrl', ['$scope', 'simpleLogin', 'fbutil', 'user', '$location',
-    function($scope, simpleLogin, fbutil, user, $location) {
+  .controller('AccountCtrl', ['$scope', 'Auth', 'fbutil', 'user', '$location', '$firebaseObject',
+    function($scope, Auth, fbutil, user, $location, $firebaseObject) {
+      var unbind;
       // create a 3-way binding with the user profile object in Firebase
-      var profile = fbutil.syncObject(['users', user.uid]);
-      profile.$bindTo($scope, 'profile');
+      var profile = $firebaseObject(fbutil.ref('users', user.uid));
+      profile.$bindTo($scope, 'profile').then(function(ub) { unbind = ub; });
 
       // expose logout function to scope
       $scope.logout = function() {
+        if( unbind ) { unbind(); }
         profile.$destroy();
-        simpleLogin.logout();
+        Auth.logout();
         $location.path('/login');
       };
 
@@ -86,7 +88,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
           $scope.err = 'New pass and confirm do not match';
         }
         else {
-          simpleLogin.changePassword(profile.email, pass, newPass)
+          Auth.changePassword(profile.email, pass, newPass)
             .then(function() {
               $scope.msg = 'Password changed';
             }, function(err) {
@@ -100,7 +102,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'simpleLogin'])
       $scope.changeEmail = function(pass, newEmail) {
         resetMessages();
         var oldEmail = profile.email;
-        simpleLogin.changeEmail(pass, oldEmail, newEmail)
+        Auth.changeEmail(pass, oldEmail, newEmail)
           .then(function() {
             $scope.emailmsg = 'Email changed';
           }, function(err) {

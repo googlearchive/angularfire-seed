@@ -1,40 +1,40 @@
 "use strict";
 describe('auth', function() {
-  var $q, $timeout, auth, fbutil, simpleLogin;
+  var $q, $timeout, auth, fbutil, Auth;
   beforeEach(function() {
     module('mock.firebase');
-    module('simpleLogin');
+    module('firebase.auth');
     module('mock.fbutil');
     module('mock.firebaseAuth');
     module(function($provide) {
       // mock up $location since we don't want to change paths here
       $provide.value('$location', {path: jasmine.createSpy()});
     });
-    inject(function(_$q_, _$timeout_, $firebaseAuth, _fbutil_, _simpleLogin_) {
+    inject(function(_$q_, _$timeout_, $firebaseAuth, _fbutil_, _Auth_) {
       $q = _$q_;
       $timeout = _$timeout_;
       fbutil = _fbutil_;
       auth = $firebaseAuth(fbutil.ref());
-      simpleLogin = _simpleLogin_;
+      Auth = _Auth_;
     });
   });
 
   describe('#login', function() {
     it('should return error if $authWithPassword fails',
-      inject(function($q, simpleLogin) {
+      inject(function($q, Auth) {
         var cb = jasmine.createSpy('reject');
         spyOn(auth, '$authWithPassword').andReturn(reject('test_error', null));
-        simpleLogin.login('test@test.com', '123').catch(cb);
+        Auth.login('test@test.com', '123').catch(cb);
         flush();
         expect(cb).toHaveBeenCalledWith('test_error');
       })
     );
 
     it('should return user if $authWithPassword succeeds',
-      inject(function(simpleLogin) {
+      inject(function(Auth) {
         spyOn(auth, '$authWithPassword').andReturn(resolve({uid: 'kato'}));
         var cb = jasmine.createSpy('resolve');
-        simpleLogin.login('test@test.com', '123').then(cb);
+        Auth.login('test@test.com', '123').then(cb);
         flush();
         expect(cb).toHaveBeenCalledWith({uid: 'kato'});
       })
@@ -43,19 +43,19 @@ describe('auth', function() {
 
   describe('#logout', function() {
     it('should invoke $firebaseAuth.$unauth()', function() {
-      inject(function(simpleLogin) {
+      inject(function(Auth) {
         spyOn(auth, '$unauth');
-        simpleLogin.logout();
+        Auth.logout();
         expect(auth.$unauth).toHaveBeenCalled();
       });
     });
   });
 
   describe('#changePassword', function() {
-    it('should fail if $firebaseSimpleLogin fails', function() {
+    it('should fail if $firebaseAuth fails', function() {
       spyOn(auth, '$changePassword').andReturn(reject('errr'));
       var cb = jasmine.createSpy('reject');
-      simpleLogin.changePassword({
+      Auth.changePassword({
         oldpass: 124,
         newpass: 123,
         confirm: 123
@@ -65,10 +65,10 @@ describe('auth', function() {
       expect(auth.$changePassword).toHaveBeenCalled();
     });
 
-    it('should resolve to user if $firebaseSimpleLogin succeeds', function() {
+    it('should resolve to user if $firebaseAuth succeeds', function() {
       spyOn(auth, '$changePassword').andReturn(resolve({uid: 'kato'}));
       var cb = jasmine.createSpy('resolve');
-      simpleLogin.changePassword({
+      Auth.changePassword({
         oldpass: 124,
         newpass: 123,
         confirm: 123
@@ -80,28 +80,28 @@ describe('auth', function() {
   });
 
   describe('#createAccount', function() {
-    var simpleLogin;
-    beforeEach(inject(function(_simpleLogin_) {
-      simpleLogin = _simpleLogin_;
+    var Auth;
+    beforeEach(inject(function(_Auth_) {
+      Auth = _Auth_;
     }));
 
     it('should invoke $createUser', function() {
       spyOn(auth, '$createUser').andReturn(resolve());
-      simpleLogin.createAccount('test@test.com', '123');
+      Auth.createAccount('test@test.com', '123');
       expect(auth.$createUser).toHaveBeenCalled();
     });
 
     it('should reject promise if error', function() {
       var cb = jasmine.createSpy('reject');
       spyOn(auth, '$createUser').andReturn(reject('test_error'));
-      simpleLogin.createAccount('test@test.com', '123').catch(cb);
+      Auth.createAccount('test@test.com', '123').catch(cb);
       flush();
       expect(cb).toHaveBeenCalledWith('test_error');
     });
 
     it('should fulfill if success', function() {
       var cb = jasmine.createSpy('resolve');
-      simpleLogin.createAccount('test@test.com', '123').then(cb);
+      Auth.createAccount('test@test.com', '123').then(cb);
       flush();
       auth.$$ref.changeAuthState({uid: 'test123'});
       flush();

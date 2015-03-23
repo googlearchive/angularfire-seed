@@ -1,7 +1,7 @@
 {
   "name": "angularfire-seed",
   "description": "A starter project for Angular + Firebase with AngularFire",
-  "version": "0.9.1",
+  "version": "1.0.0",
   "homepage": "https://github.com/firebase/angularfire-seed",
   "repository": "https://github.com/angular/angular-seed",
   "private": true,

@@ -64,7 +64,7 @@ it easier to serve the files by a webserver.*
 ### Configure the Application
 
  1. Open `app/js/config.js` and set the value of FBURL constant to your Firebase URL
- 1. Go to your Firebase dashboard and enable email/password authentication under the Simple Login tab
+ 1. Go to your Firebase dashboard and enable email/password authentication under the Auth tab
  1. Copy/paste the contents of `config/security-rules.json` into your Security tab, which is also under your Firebase dashboard.
 
 ### Run the Application
@@ -96,7 +96,7 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
         firebase.utils.js --> some DRY methods for interacting with Firebase and AngularFire
         routes.js         --> routing and route security for the app
         services.js       --> custom angular services
-        simpleLogin.js    --> some DRY methods for interacting with `$firebaseSimpleLogin`
+        auth.js    --> some DRY methods for interacting with Firebase authentication
       partials/           --> angular view partials (partial html templates)
         account.html
         chat.html

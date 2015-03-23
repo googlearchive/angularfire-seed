@@ -1,20 +1,31 @@
 
 // a simple wrapper on Firebase and AngularFire to simplify deps and keep things DRY
 angular.module('firebase.utils', ['firebase', 'myApp.config'])
-   .factory('fbutil', ['$window', 'FBURL', '$firebase', function($window, FBURL, $firebase) {
+   .factory('fbutil', ['$window', 'FBURL', '$q', function($window, FBURL, $q) {
       "use strict";
 
-      return {
-        syncObject: function(path, factoryConfig) {
-          return syncData.apply(null, arguments).$asObject();
+      var utils = {
+        // convert a node or Firebase style callback to a future
+        handler: function(fn, context) {
+          return utils.defer(function(def) {
+            fn.call(context, function(err, result) {
+              if( err !== null ) { def.reject(err); }
+              else { def.resolve(result); }
+            });
+          });
         },
 
-        syncArray: function(path, factoryConfig) {
-          return syncData.apply(null, arguments).$asArray();
+        // abstract the process of creating a future/promise
+        defer: function(fn, context) {
+          var def = $q.defer();
+          fn.call(context, def);
+          return def.promise;
         },
 
         ref: firebaseRef
       };
+
+      return utils;
 
       function pathRef(args) {
         for (var i = 0; i < args.length; i++) {
@@ -48,41 +59,6 @@ angular.module('firebase.utils', ['firebase', 'myApp.config'])
           ref = ref.child(pathRef(args));
         }
         return ref;
-      }
-
-      /**
-       * Create a $firebase reference with just a relative path. For example:
-       *
-       * <code>
-       * function(syncData) {
-         *    // a regular $firebase ref
-         *    $scope.widget = syncData('widgets/alpha');
-         *
-         *    // or automatic 3-way binding
-         *    syncData('widgets/alpha').$bind($scope, 'widget');
-         * }
-       * </code>
-       *
-       * Props is the second param passed into $firebase. It can also contain limit, startAt, endAt,
-       * and they will be applied to the ref before passing into $firebase
-       *
-       * @function
-       * @name syncData
-       * @param {String|Array...} path relative path to the root folder in Firebase instance
-       * @param {object} [props]
-       * @return a Firebase instance
-       */
-      function syncData(path, props) {
-        var ref = firebaseRef(path);
-        props = angular.extend({}, props);
-        angular.forEach(['limit', 'startAt', 'endAt'], function(k) {
-          if( props.hasOwnProperty(k) ) {
-            var v = props[k];
-            ref = ref[k].apply(ref, angular.isArray(v)? v : [v]);
-            delete props[k];
-          }
-        });
-        return $firebase(ref, props);
       }
    }]);
 
