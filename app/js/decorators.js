@@ -15,7 +15,7 @@ angular.module('myApp.decorators', ['firebase.utils', 'firebase.auth'])
         // make a copy of the old directive
         var _compile = directive.compile;
         directive.compile = function(element, attr) {
-          Auth.getUser().then(function() {
+          Auth.$waitForAuth().then(function() {
             // after auth, run the original ng-cloak directive
             _compile.call(directive, element, attr);
           });

@@ -12,7 +12,7 @@ angular.module('myApp.routes', ['ngRoute', 'firebase.auth'])
         // in the controller, but this makes things cleaner (controller doesn't need to worry
         // about auth status or timing of displaying its UI components)
         user: ['Auth', function(Auth) {
-          return Auth.getUser();
+          return Auth.$waitForAuth();
         }]
       }
     },
@@ -36,7 +36,8 @@ angular.module('myApp.routes', ['ngRoute', 'firebase.auth'])
 
   /**
    * Adds a special `whenAuthenticated` method onto $routeProvider. This special method,
-   * when called, invokes the requireUser() service (see Auth.js).
+   * when called, waits for auth status to be resolved asynchronously, and then fails/redirects
+   * if the user is not properly authenticated.
    *
    * The promise either resolves to the authenticated user object and makes it available to
    * dependency injection (see AuthCtrl), or rejects the promise if user is not logged in,
@@ -49,8 +50,8 @@ angular.module('myApp.routes', ['ngRoute', 'firebase.auth'])
     // to hack it directly onto the $routeProvider object
     $routeProvider.whenAuthenticated = function(path, route) {
       route.resolve = route.resolve || {};
-      route.resolve.user = ['requireUser', function(requireUser) {
-        return requireUser();
+      route.resolve.user = ['Auth', function(Auth) {
+        return Auth.$requireAuth();
       }];
       $routeProvider.when(path, route);
     }
@@ -84,7 +85,7 @@ angular.module('myApp.routes', ['ngRoute', 'firebase.auth'])
   .run(['$rootScope', '$location', 'Auth', 'ROUTES', 'loginRedirectPath',
     function($rootScope, $location, Auth, ROUTES, loginRedirectPath) {
       // watch for login status changes and redirect if appropriate
-      Auth.watch(check, $rootScope);
+      Auth.$onAuth(check);
 
       // some of our routes may reject resolve promises with the special {authRequired: true} error
       // this redirects to the login page whenever that is encountered

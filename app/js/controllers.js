@@ -26,7 +26,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
 
     $scope.login = function(email, pass) {
       $scope.err = null;
-      Auth.login(email, pass)
+      Auth.$authWithPassword({ email: email, password: pass }, {rememberMe: true})
         .then(function(/* user */) {
           $location.path('/account');
         }, function(err) {
@@ -37,8 +37,23 @@ angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
     $scope.createAccount = function() {
       $scope.err = null;
       if( assertValidAccountProps() ) {
-        Auth.createAccount($scope.email, $scope.pass)
+        var email = $scope.email;
+        var pass = $scope.pass;
+        // create user credentials in Firebase auth system
+        Auth.auth.$createUser({email: email, password: pass})
+          .then(function() {
+            // authenticate so we have permission to write to Firebase
+            return $scope.login(email, pass);
+          })
+          .then(function(user) {
+            // create a user profile in our data store
+            var ref = fbutil.ref('users', user.uid);
+            return fbutil.handler(function(cb) {
+              ref.set({email: email, name: name||firstPartOfEmail(email)}, cb);
+            });
+          })
           .then(function(/* user */) {
+            // redirect to the account page
             $location.path('/account');
           }, function(err) {
             $scope.err = errMessage(err);
@@ -62,6 +77,17 @@ angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
     function errMessage(err) {
       return angular.isObject(err) && err.code? err.code : err + '';
     }
+
+    function firstPartOfEmail(email) {
+      return ucfirst(email.substr(0, email.indexOf('@'))||'');
+    }
+
+    function ucfirst (str) {
+      // inspired by: http://kevin.vanzonneveld.net
+      str += '';
+      var f = str.charAt(0).toUpperCase();
+      return f + str.substr(1);
+    }
   }])
 
   .controller('AccountCtrl', ['$scope', 'Auth', 'fbutil', 'user', '$location', '$firebaseObject',
@@ -75,7 +101,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
       $scope.logout = function() {
         if( unbind ) { unbind(); }
         profile.$destroy();
-        Auth.logout();
+        Auth.$unauth();
         $location.path('/login');
       };
 
@@ -88,7 +114,7 @@ angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
           $scope.err = 'New pass and confirm do not match';
         }
         else {
-          Auth.changePassword(profile.email, pass, newPass)
+          Auth.$changePassword({email: profile.email, oldPassword: pass, newPassword: newPass})
             .then(function() {
               $scope.msg = 'Password changed';
             }, function(err) {
@@ -102,7 +128,13 @@ angular.module('myApp.controllers', ['firebase.utils', 'firebase.auth'])
       $scope.changeEmail = function(pass, newEmail) {
         resetMessages();
         var oldEmail = profile.email;
-        Auth.changeEmail(pass, oldEmail, newEmail)
+        Auth.$changeEmail({oldEmail: oldEmail, newEmail: newEmail, password: pass})
+          .then(function() {
+            // store the new email address in the user's profile
+            return fbutil.handle(function(done) {
+              fbutil.ref('users', user.uid, 'email').set(newEmail, done);
+            });
+          })
           .then(function() {
             $scope.emailmsg = 'Email changed';
           }, function(err) {

@@ -16,7 +16,7 @@ angular.module('myApp.directives', ['firebase.auth'])
    */
   .directive('ngShowAuth', ['Auth', '$timeout', function (Auth, $timeout) {
     var isLoggedIn;
-    Auth.watch(function(user) {
+    Auth.$onAuth(function(user) {
       isLoggedIn = !!user;
     });
 
@@ -34,7 +34,8 @@ angular.module('myApp.directives', ['firebase.auth'])
         }
 
         update();
-        Auth.watch(update, scope);
+        var dispose = Auth.$onAuth(update);
+        scope.$on('$destroy', dispose);
       }
     };
   }])
@@ -44,7 +45,7 @@ angular.module('myApp.directives', ['firebase.auth'])
    */
   .directive('ngHideAuth', ['Auth', '$timeout', function (Auth, $timeout) {
     var isLoggedIn;
-    Auth.watch(function(user) {
+    Auth.$onAuth(function(user) {
       isLoggedIn = !!user;
     });
 
@@ -62,7 +63,8 @@ angular.module('myApp.directives', ['firebase.auth'])
         }
 
         update();
-        Auth.watch(update, scope);
+        var dispose = Auth.$onAuth(update);
+        scope.$on('$destroy', dispose);
       }
     };
   }]);
