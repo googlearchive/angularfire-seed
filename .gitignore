@@ -14,7 +14,7 @@ tmp/
 local.properties
 .classpath
 .settings/
-.loadpath
+.loadpathgi
 
 # External tool builders
 .externalToolBuilders/

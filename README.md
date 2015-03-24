@@ -63,9 +63,9 @@ it easier to serve the files by a webserver.*
 
 ### Configure the Application
 
- 1. Open `app/js/config.js` and set the value of FBURL constant to your Firebase URL
+ 1. Open `app/config.js` and set the value of FBURL constant to your Firebase URL
  1. Go to your Firebase dashboard and enable email/password authentication under the Auth tab
- 1. Copy/paste the contents of `config/security-rules.json` into your Security tab, which is also under your Firebase dashboard.
+ 1. Copy/paste the contents of `security-rules.json` into your Security tab, which is also under your Firebase dashboard.
 
 ### Run the Application
 
@@ -81,35 +81,24 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
 ## Directory Layout
 
     app/                  --> all of the files to be used in production
-      css/                --> css files
-        app.css           --> default stylesheet
-      img/                --> image files
+      app.js              --> application
+      config.js           --> where you configure Firebase and auth options
+      app.css             --> default stylesheet
       index.html          --> app layout file (the main html template file of the app)
       index-async.html    --> just like index.html, but loads js files asynchronously
-      js/                 --> javascript files
-        app.js            --> application
-        config.js         --> where you configure Firebase and auth options
-        firebase.utils.js --> some DRY methods for interacting with Firebase and AngularFire
-        security.js         --> routing and route security for the app
-        auth.js    --> some DRY methods for interacting with Firebase authentication
-      partials/           --> angular view partials (partial html templates)
-        account.html
-        chat.html
-        home.html
-        login.html
-
-    test/                   --> test config and source files
-      protractor-conf.js    --> config file for running e2e tests with Protractor
-      e2e/                  --> end-to-end specs
-        scenarios.js
-      karma.conf.js         --> config file for running unit tests with Karma
-      unit/                 --> unit level specs/tests
-        configSpec.js       --> specs for config
-        controllersSpec.js  --> specs for controllers
-        directivesSpec.js   --> specs for directives
-        filtersSpec.js      --> specs for filters
-        servicesSpec.js     --> specs for services
-
+      components/         --> javascript files
+        appversion/       --> The app-version directive
+        auth/             --> A wrapper on the `$firebaseAuth` service
+        firebase.utils/   --> Some convenience methods for dealing with Firebase event callbacks and refs
+        ngcloak/          --> A decorator on the ngCloak directive so that it works with auth
+        reverse/          --> A filter to reverse order of arrays
+        security/         --> route-based security tools (adds the $routeProvider.whenAuthenticated() method and redirects)
+      account/            --> the account view
+      chat/               --> the chat view
+      home/               --> the default view
+      login/              --> login screen
+    e2e-tests/            --> protractor end-to-end tests
+    test/lib/             --> utilities and mocks for test units
 
 ## Testing
 
@@ -150,8 +139,8 @@ The angularfire-seed app comes with end-to-end tests, again written in [Jasmine]
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
 special features for Angular applications.
 
-* the configuration is found at `test/protractor-conf.js`
-* the end-to-end tests are found in `test/e2e/`
+* the configuration is found at `e2e-tests/protractor-conf.js`
+* the end-to-end tests are found in `e2e-tests/scenarios`
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor
