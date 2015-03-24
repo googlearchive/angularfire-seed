@@ -8,7 +8,7 @@ angular.module('myApp.login', ['firebase.utils', 'firebase.auth', 'ngRoute'])
     });
   }])
 
-  .controller('LoginCtrl', ['$scope', 'Auth', '$location', function($scope, Auth, $location) {
+  .controller('LoginCtrl', ['$scope', 'Auth', '$location', 'fbutil', function($scope, Auth, $location, fbutil) {
     $scope.email = null;
     $scope.pass = null;
     $scope.confirm = null;
@@ -30,10 +30,10 @@ angular.module('myApp.login', ['firebase.utils', 'firebase.auth', 'ngRoute'])
         var email = $scope.email;
         var pass = $scope.pass;
         // create user credentials in Firebase auth system
-        Auth.auth.$createUser({email: email, password: pass})
+        Auth.$createUser({email: email, password: pass})
           .then(function() {
             // authenticate so we have permission to write to Firebase
-            return $scope.login(email, pass);
+            return Auth.$authWithPassword({ email: email, password: pass });
           })
           .then(function(user) {
             // create a user profile in our data store
