@@ -1,9 +1,0 @@
-<h2>Home</h2>
-
-<p class="status good" ng-show-auth>Hello! You are logged in with id {{user.uid}}.</p>
-<p class="status" ng-hide-auth>Welcome. You are not <a href="#/login">logged in</a></p>
-
-<input ng-model="syncedValue.$value" type="text" ng-change="syncedValue.$save()" /> <b>{{syncedValue.$value}}</b>
-
-<p>Open <a ng-href="{{FBURL}}/syncedValue" target="_blank">Forge</a> or a <a target="_blank" href="#/">new window</a> to see this input update in real time.</p>
-

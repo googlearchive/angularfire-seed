@@ -44,17 +44,18 @@
         'bower_components/angular/angular.js',
         'bower_components/angular-route/angular-route.js',
         'bower_components/angularfire/dist/angularfire.js',
-        'js/app.js',
-        'js/changeEmail.js',
-        'js/config.js',
-        'js/controllers.js',
-        'js/decorators.js',
-        'js/directives.js',
-        'js/filters.js',
-        'js/firebase.utils.js',
-        'js/routes.js',
-        'js/services.js',
-        'js/auth.js'
+        'app.js',
+        'config.js',
+        'components/appversion/appversion-directive.js',
+        'components/auth/auth.js',
+        'components/firebase.utils/firebase.utils.js',
+        'components/ngcloak/ngcloak-decorator.js',
+        'components/reverse/reverse-filter.js',
+        'components/security/security.js',
+        'home/home.js',
+        'account/account.js',
+        'chat/chat.js',
+        'login/login.js'
       ], function () {
         // when all is done, execute bootstrap angular application
         angular.bootstrap(document, ['myApp']);
@@ -62,15 +63,15 @@
     });
   </script>
   <title>My AngularJS App</title>
-  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="app.css">
 </head>
 <body ng-cloak>
 
     <ul class="menu">
         <li><a href="#/home">home</a></li>
         <li><a href="#/chat">chat</a></li>
-        <li ng-show-auth="['logout','error']"><a href="#/login">login</a></li>
-        <li ng-show-auth="'login'"><a href="#/account">account</a></li>
+        <li ng-hide="loggedIn"><a href="#/login">login</a></li>
+        <li ng-show="loggedIn"><a href="#/account">account</a></li>
     </ul>
 
     <div ng-view></div>

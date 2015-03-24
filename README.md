@@ -89,13 +89,8 @@ Now browse to the app at `http://localhost:8000/app/index.html`.
       js/                 --> javascript files
         app.js            --> application
         config.js         --> where you configure Firebase and auth options
-        controllers.js    --> application controllers
-        directives.js     --> application directives
-        decorators.js     --> decorator functions
-        filters.js        --> custom angular filters
         firebase.utils.js --> some DRY methods for interacting with Firebase and AngularFire
-        routes.js         --> routing and route security for the app
-        services.js       --> custom angular services
+        security.js         --> routing and route security for the app
         auth.js    --> some DRY methods for interacting with Firebase authentication
       partials/           --> angular view partials (partial html templates)
         account.html
