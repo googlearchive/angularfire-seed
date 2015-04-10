@@ -33,6 +33,7 @@
           return Auth.$requireAuth();
         }];
         $routeProvider.when(path, route);
+        return this;
       }
     }])
 
