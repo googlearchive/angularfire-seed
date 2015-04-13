@@ -139,7 +139,7 @@ The angularfire-seed app comes with end-to-end tests, again written in [Jasmine]
 are run with the [Protractor][protractor] End-to-End test runner.  It uses native events and has
 special features for Angular applications.
 
-* the configuration is found at `protractor.conf.js`
+* the configuration is found at `e2e-tests/protractor-conf.js`
 * the end-to-end tests are found in `e2e-tests/scenarios.js`
 
 Protractor simulates interaction with our web app and verifies that the application responds
