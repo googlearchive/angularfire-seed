@@ -140,7 +140,7 @@ are run with the [Protractor][protractor] End-to-End test runner.  It uses nativ
 special features for Angular applications.
 
 * the configuration is found at `e2e-tests/protractor-conf.js`
-* the end-to-end tests are found in `e2e-tests/scenarios`
+* the end-to-end tests are found in `e2e-tests/scenarios.js`
 
 Protractor simulates interaction with our web app and verifies that the application responds
 correctly. Therefore, our web server needs to be serving up the application, so that Protractor
