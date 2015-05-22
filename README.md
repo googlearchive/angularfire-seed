@@ -1,7 +1,7 @@
 # angularfire-seed — the seed for Angular+Firebase apps
 
-This derivative of [angular-seed](https://github.com/angular/angular-seed) is an application 
-skeleton for a typical [AngularFire](http://angularfire.com/) web app. You can use it to quickly 
+This derivative of [angular-seed](https://github.com/angular/angular-seed) is an application
+skeleton for a typical [AngularFire](http://angularfire.com/) web app. You can use it to quickly
 bootstrap your Angular + Firebase projects.
 
 The seed is preconfigured to install the Angular framework, Firebase, AngularFire, and a bundle of
@@ -17,7 +17,7 @@ including:
 
 ## How to use angularfire-seed
 
-Other than one additional configuration step (specifying your Firebase URL), this setup is nearly
+Other than one additional configuration step (specifying your Firebase database URL), this setup is nearly
 identical to angular-seed.
 
 ### Prerequisites
@@ -63,7 +63,7 @@ it easier to serve the files by a webserver.*
 
 ### Configure the Application
 
- 1. Open `app/config.js` and set the value of FBURL constant to your Firebase URL
+ 1. Open `app/config.js` and set the value of FBURL constant to your Firebase database URL
  1. Go to your Firebase dashboard and enable email/password authentication under the Auth tab
  1. Copy/paste the contents of `security-rules.json` into your Security tab, which is also under your Firebase dashboard.
 
@@ -240,7 +240,7 @@ configure your server to serve the files under the `app/` directory.
 
 ### Running the App in Production
 
-This really depends on how complex is your app and the overall infrastructure of your system, but
+This really depends on how complex your app is and the overall infrastructure of your system, but
 the general rule is that all you need in production are all the files under the `app/` directory.
 Everything else should be omitted.
 
@@ -272,7 +272,7 @@ along with a CI service (in Jenkins) hosted that will run unit and end to end te
 
 ## Contact
 
-For more information on Firebase and AngularFire, 
+For more information on Firebase and AngularFire,
 check out https://firebase.com/docs/web/bindings/angular
 
 For more information on AngularJS please check out http://angularjs.org/
