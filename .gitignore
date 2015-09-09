@@ -218,3 +218,11 @@ pip-log.txt
 #Test result ignore
 test_out/unit.xml
 test_out/e2e.xml
+
+
+#############
+## Node/Npm/Bower
+#############
+
+node_modules/
+app/bower_components/
