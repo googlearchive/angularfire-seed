@@ -1,3 +1,8 @@
+# Status: Archived
+This repository has been archived and is no longer maintained.
+
+![status: inactive](https://img.shields.io/badge/status-inactive-red.svg)
+
 # angularfire-seed — the seed for Angular+Firebase apps
 
 ## Disclaimer: This project is for legacy Firebase apps (version < 2.0). If you created an app using console.firebase.google.com this project will not work for you. Please see the [main AngularFire repo](https://github.com/firebase/angularfire/) for documentation on setting up an application with the new setup.
